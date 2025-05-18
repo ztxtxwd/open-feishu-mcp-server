@@ -55,7 +55,7 @@ export async function fetchUpstreamAuthToken({
 	client_secret: string;
 	redirect_uri: string;
 	client_id: string;
-}): Promise<[string, null] | [null, Response]> {
+}): Promise<[string, string, number, number, null] | [null, Response]> {
 	if (!code) {
 		return [null, new Response("Missing code", { status: 400 })];
 	}
@@ -80,14 +80,23 @@ export async function fetchUpstreamAuthToken({
 			console.log(await resp.text());
 			return [null, new Response("Failed to fetch access token", { status: 500 })];
 		}
-		const data = await resp.json();
+		const data = await resp.json() as {
+			access_token: string;
+			refresh_token: string;
+			expires_in: string;
+			refresh_token_expires_in: string;
+		};
 		const accessToken = data.access_token;
-
+		const refreshToken = data.refresh_token;
+		const expiresIn = data.expires_in;
+		const refreshTokenExpiresIn = data.refresh_token_expires_in;
+		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
+		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
 
-		return [accessToken, null];
+		return [accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
 	} else {
 		// Original GitHub implementation
 		const resp = await fetch(upstream_url, {
@@ -103,10 +112,106 @@ export async function fetchUpstreamAuthToken({
 		}
 		const body = await resp.formData();
 		const accessToken = body.get("access_token") as string;
+		const refreshToken = body.get("refresh_token") as string;
+		const expiresIn = body.get("expires_in") as string;
+		const refreshTokenExpiresIn = body.get("refresh_token_expires_in") as string;
+		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
+		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
-		return [accessToken, null];
+		return [accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
+	}
+}
+
+/**
+ * Refreshes an access token from an upstream service.
+ *
+ * @param {Object} options
+ * @param {string} options.refreshToken - The refresh token of the application.
+ * @param {string} options.upstream_url - The token endpoint URL of the upstream service.
+ * @param {string} options.client_id - The client ID of the application.
+ * @param {string} options.client_secret - The client secret of the application.
+ *
+ * @returns {Promise<[string, null] | [null, Response]>} A promise that resolves to an array containing the access token or an error response.
+ */
+export async function refreshUpstreamAuthToken({
+	refreshToken,
+	upstream_url,
+	client_id,
+	client_secret,
+}: {
+	refreshToken: string;
+	upstream_url: string;
+	client_secret: string;
+	client_id: string;
+}): Promise<[string, string, number, number, null] | [null, Response]> {
+	// Feishu requires a different format for token requests
+	if (upstream_url.includes('feishu.cn') || upstream_url.includes('larksuite.com')) {
+		const resp = await fetch(upstream_url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json; charset=utf-8",
+			},
+			body: JSON.stringify({
+				grant_type: "refresh_token",
+				refresh_token: refreshToken,
+				client_id,
+				client_secret,
+			}),
+		});
+
+		if (!resp.ok) {
+			console.log(await resp.text());
+			return [null, new Response("Failed to refresh access token", { status: 500 })];
+		}
+		const data = await resp.json() as {
+			access_token: string;
+			refresh_token: string;
+			expires_in: string;
+			refresh_token_expires_in: string;
+		};
+		const accessToken = data.access_token;
+		const newRefreshToken = data.refresh_token;
+		const expiresIn = data.expires_in;
+		const refreshTokenExpiresIn = data.refresh_token_expires_in;
+		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
+		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
+		if (!accessToken) {
+			return [null, new Response("Missing access token", { status: 400 })];
+		}
+
+		return [accessToken, newRefreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
+	} else {
+		// Original GitHub implementation
+		const resp = await fetch(upstream_url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: new URLSearchParams({
+				client_id,
+				client_secret,
+				refresh_token: refreshToken,
+				grant_type: "refresh_token",
+			}).toString(),
+		});
+
+		if (!resp.ok) {	
+			console.log(await resp.text());
+			return [null, new Response("Failed to refresh access token", { status: 500 })];
+		}
+		const body = await resp.formData();
+		const accessToken = body.get("access_token") as string;
+		const newRefreshToken = body.get("refresh_token") as string;
+		const expiresIn = body.get("expires_in") as string;
+		const refreshTokenExpiresIn = body.get("refresh_token_expires_in") as string;
+		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
+		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
+		if (!accessToken) {
+			return [null, new Response("Missing access token", { status: 400 })];
+		}
+		return [accessToken, newRefreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
 	}
 }
 
@@ -118,4 +223,7 @@ export type Props = {
 	name: string
 	email?: string
 	accessToken: string
+	refreshToken: string
+	accessTokenExpiresAt: number
+	refreshTokenExpiresAt: number
 }

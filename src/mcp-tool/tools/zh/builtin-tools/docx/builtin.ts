@@ -90,16 +90,6 @@ export const larkDocxBuiltinImportTool: McpTool = {
   customHandler: async (client, params, options): Promise<any> => {
     try {
       const { userAccessToken } = options || {}
-      const file = Readable.from(params.data.markdown) as ReadStream
-
-      const data = {
-        file_name: 'docx.md',
-        parent_type: 'ccm_import_open' as const,
-        parent_node: '/',
-        size: Buffer.byteLength(params.data.markdown),
-        file,
-        extra: JSON.stringify({ obj_type: 'docx', file_extension: 'md' }),
-      }
 
       // 构造 FormData
       const formData = new FormData()
@@ -120,7 +110,6 @@ export const larkDocxBuiltinImportTool: McpTool = {
         body: formData,
       })
       const result = await resp.json()
-      console.log('result', result)
       // const response =
       //   userAccessToken && params.useUAT
       //     ? await client.drive.media.uploadAll({ data }, lark.withUserAccessToken(userAccessToken))

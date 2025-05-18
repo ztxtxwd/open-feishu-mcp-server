@@ -3,7 +3,7 @@ import { McpAgent } from 'agents/mcp'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { FeishuHandler } from './feishu-handler'
-import { Props } from './utils'
+import { Props, refreshUpstreamAuthToken } from './utils'
 import { caseTransf } from './mcp-tool/utils/case-transf'
 import { larkOapiHandler } from './mcp-tool/utils/handler'
 import { getShouldUseUAT } from './mcp-tool/utils/get-should-use-uat'
@@ -13,8 +13,6 @@ import { GenTools } from './mcp-tool/tools/zh/gen-tools'
 import { Client } from '@larksuiteoapi/node-sdk'
 import { env } from 'cloudflare:workers'
 import { oapiHttpInstance } from './utils/http-instance'
-
-
 
 const ALLOWED_USER_IDS = new Set([
   // Add Feishu user IDs of users who should have access to the image generation tool
@@ -69,19 +67,20 @@ export class MyMCP extends McpAgent<Props, Env> {
     })
 
     // const tool = GenTools.find((tool) => tool.name === 'docx.v1.document.rawContent')
-    const tool = docxBuiltinTools[1]
-    if (tool) {
-      this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
-        try {
-          const handler = tool.customHandler || larkOapiHandler
-          return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
-        } catch (error) {
-          return {
-            isError: true,
-            content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
+    for (const tool of [...docxBuiltinTools, ...GenTools]) {
+      if (tool) {
+        this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
+          try {
+            const handler = tool.customHandler || larkOapiHandler
+            return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
+          } catch (error) {
+            return {
+              isError: true,
+              content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
+            }
           }
-        }
-      })
+        })
+      }
     }
   }
 }
@@ -93,4 +92,28 @@ export default new OAuthProvider({
   authorizeEndpoint: '/authorize',
   tokenEndpoint: '/token',
   clientRegistrationEndpoint: '/register',
+  tokenExchangeCallback: async (options) => {
+    // console.log('tokenExchangeCallback', options)
+    if (options.grantType === 'refresh_token') {
+      const [accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, errResponse] = await refreshUpstreamAuthToken({
+        refreshToken: options.props.refreshToken,
+        upstream_url: 'https://open.feishu.cn/open-apis/authen/v2/oauth/token',
+        client_id: env.FEISHU_APP_ID,
+        client_secret: env.FEISHU_APP_SECRET,
+      })
+      // console.log('refreshUpstreamAuthToken', accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, errResponse)
+      if (errResponse) {
+      } else {
+        return {
+          newProps: {
+            ...options.props,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            accessTokenExpiresAt: accessTokenExpiresAt,
+            refreshTokenExpiresAt: refreshTokenExpiresAt,
+          },
+        }
+      }
+    }
+  },
 })

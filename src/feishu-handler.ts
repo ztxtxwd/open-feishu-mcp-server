@@ -70,7 +70,7 @@ app.get("/callback", async (c) => {
 	}
 
 	// Exchange the code for an access token
-	const [accessToken, errResponse] = await fetchUpstreamAuthToken({
+	const [accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, errResponse] = await fetchUpstreamAuthToken({
 		upstream_url: "https://open.feishu.cn/open-apis/authen/v2/oauth/token",
 		client_id: c.env.FEISHU_APP_ID,
 		client_secret: c.env.FEISHU_APP_SECRET,
@@ -91,7 +91,14 @@ app.get("/callback", async (c) => {
 		return c.text("Failed to fetch user info", 500);
 	}
 
-	const userInfo = await userInfoResponse.json();
+	const userInfo = await userInfoResponse.json() as {
+		data: {
+			name: string;
+			en_name: string;
+			email: string;
+			user_id: string;
+		}
+	};
 	const { name, en_name, email, user_id } = userInfo.data;
 	// console.log('accessToken', accessToken);
 
@@ -109,6 +116,9 @@ app.get("/callback", async (c) => {
 			name: name || en_name,
 			email,
 			accessToken,
+			refreshToken,
+			accessTokenExpiresAt,
+			refreshTokenExpiresAt,
 		} as Props,
 	});
 	return Response.redirect(redirectTo);
