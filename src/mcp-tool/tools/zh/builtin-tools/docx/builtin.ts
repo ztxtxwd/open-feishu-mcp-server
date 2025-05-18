@@ -3,6 +3,7 @@ import * as lark from '@larksuiteoapi/node-sdk'
 import { ReadStream } from 'fs'
 import { Readable } from 'stream'
 import { z } from 'zod'
+import { addMermaidBlockMarkers } from '../../../../utils/markdown-processor'
 
 // 工具名称类型
 export type docxBuiltinToolName = 'docx.builtin.search' | 'docx.builtin.import'
@@ -91,13 +92,16 @@ export const larkDocxBuiltinImportTool: McpTool = {
     try {
       const { userAccessToken } = options || {}
 
+      // 处理 markdown 内容，为 mermaid 代码块添加标记
+      const processedMarkdown = addMermaidBlockMarkers(params.data.markdown)
+
       // 构造 FormData
       const formData = new FormData()
       formData.append('file_name', 'docx.md')
       formData.append('parent_type', 'ccm_import_open')
       formData.append('parent_node', '/')
-      formData.append('size', Buffer.byteLength(params.data.markdown).toString())
-      formData.append('file', new File([params.data.markdown], 'docx.md'))
+      formData.append('size', Buffer.byteLength(processedMarkdown).toString())
+      formData.append('file', new File([processedMarkdown], 'docx.md'))
       formData.append('extra', JSON.stringify({ obj_type: 'docx', file_extension: 'md' }))
 
       // 发起 POST 请求
