@@ -1,6 +1,10 @@
 # Model Context Protocol (MCP) Server + Feishu OAuth
 
+[中文文档](README.zh.md)
+
 This is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) server that supports remote MCP connections, with Feishu OAuth built-in.
+
+This project is modified from [cloudflare/ai/demos/remote-mcp-github-oauth](https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-github-oauth), replacing GitHub OAuth with Feishu OAuth and integrating tools based on the official Feishu/Lark OpenAPI MCP library.
 
 You can deploy it to your own Cloudflare account, and after you create your own Feishu OAuth client app, you'll have a fully functional remote MCP server that you can build off. Users will be able to connect to your MCP server by signing in with their Feishu account.
 
@@ -15,11 +19,6 @@ The MCP server (powered by [Cloudflare Workers](https://developers.cloudflare.co
 
 Clone the repo directly & install dependencies: `npm install`.
 
-Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
-```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-github-oauth
-```
-
 ### For Production
 Create a new Feishu application on the [Feishu Open Platform](https://open.feishu.cn/):
 1. Go to the [Feishu Open Platform](https://open.feishu.cn/) and log in
@@ -30,6 +29,7 @@ Create a new Feishu application on the [Feishu Open Platform](https://open.feish
      - "获取用户 ID" (auth:user.id:read)
      - "获取用户任务信息" (task:task:read)
      - "获取用户授权凭证" (offline_access)
+     - "获取用户基本信息" (user_profile)
    - Note your App ID and App Secret
 4. Set secrets via Wrangler
 ```bash
@@ -101,6 +101,7 @@ If you'd like to iterate and test your MCP server, you can do so in local develo
      - "获取用户 ID" (auth:user.id:read)
      - "获取用户任务信息" (task:task:read)
      - "获取用户授权凭证" (offline_access)
+     - "获取用户基本信息" (user_profile)
    - Note your App ID and App Secret
 2. Create a `.dev.vars` file in your project root with:
 ```
@@ -149,3 +150,14 @@ The MCP Remote library enables your server to expose tools that can be invoked b
 - Provides a structured way to define tools
 - Handles serialization and deserialization of requests and responses
 - Maintains the Server-Sent Events (SSE) connection between clients and your server
+
+#### Feishu MCP Tools
+This project integrates tools based on the official Feishu/Lark MCP library, including:
+- Document operations: search and import cloud documents
+- Message sending: batch send messages, create app feed cards
+- Task management: create tasks, comments, tasklists
+- AI capabilities: optical character recognition
+- Feishu dictionary: get repository lists, entity management
+- Helpdesk features: send ticket messages
+
+These tools use User Access Tokens for authentication, ensuring secure access to Feishu APIs.
