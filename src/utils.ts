@@ -55,7 +55,7 @@ export async function fetchUpstreamAuthToken({
 	client_secret: string;
 	redirect_uri: string;
 	client_id: string;
-}): Promise<[string, string, number, number, null] | [null, Response]> {
+}): Promise<[string, string, null] | [null, Response]> {
 	if (!code) {
 		return [null, new Response("Missing code", { status: 400 })];
 	}
@@ -83,20 +83,14 @@ export async function fetchUpstreamAuthToken({
 		const data = await resp.json() as {
 			access_token: string;
 			refresh_token: string;
-			expires_in: string;
-			refresh_token_expires_in: string;
 		};
 		const accessToken = data.access_token;
 		const refreshToken = data.refresh_token;
-		const expiresIn = data.expires_in;
-		const refreshTokenExpiresIn = data.refresh_token_expires_in;
-		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
-		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
 
-		return [accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
+		return [accessToken, refreshToken, null];
 	} else {
 		// Original GitHub implementation
 		const resp = await fetch(upstream_url, {
@@ -113,14 +107,10 @@ export async function fetchUpstreamAuthToken({
 		const body = await resp.formData();
 		const accessToken = body.get("access_token") as string;
 		const refreshToken = body.get("refresh_token") as string;
-		const expiresIn = body.get("expires_in") as string;
-		const refreshTokenExpiresIn = body.get("refresh_token_expires_in") as string;
-		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
-		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
-		return [accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
+		return [accessToken, refreshToken, null];
 	}
 }
 
@@ -145,7 +135,7 @@ export async function refreshUpstreamAuthToken({
 	upstream_url: string;
 	client_secret: string;
 	client_id: string;
-}): Promise<[string, string, number, number, null] | [null, Response]> {
+}): Promise<[string, string, number, null] | [null, Response]> {
 	// Feishu requires a different format for token requests
 	if (upstream_url.includes('feishu.cn') || upstream_url.includes('larksuite.com')) {
 		const resp = await fetch(upstream_url, {
@@ -168,20 +158,16 @@ export async function refreshUpstreamAuthToken({
 		const data = await resp.json() as {
 			access_token: string;
 			refresh_token: string;
-			expires_in: string;
-			refresh_token_expires_in: string;
+			expires_in: number;
 		};
 		const accessToken = data.access_token;
 		const newRefreshToken = data.refresh_token;
 		const expiresIn = data.expires_in;
-		const refreshTokenExpiresIn = data.refresh_token_expires_in;
-		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
-		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
 
-		return [accessToken, newRefreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
+		return [accessToken, newRefreshToken, expiresIn, null];
 	} else {
 		// Original GitHub implementation
 		const resp = await fetch(upstream_url, {
@@ -204,14 +190,11 @@ export async function refreshUpstreamAuthToken({
 		const body = await resp.formData();
 		const accessToken = body.get("access_token") as string;
 		const newRefreshToken = body.get("refresh_token") as string;
-		const expiresIn = body.get("expires_in") as string;
-		const refreshTokenExpiresIn = body.get("refresh_token_expires_in") as string;
-		const accessTokenExpiresAt = Date.now() + parseInt(expiresIn) * 1000;
-		const refreshTokenExpiresAt = Date.now() + parseInt(refreshTokenExpiresIn) * 1000;
+		const expiresIn = parseInt(body.get("expires_in") as string);
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
-		return [accessToken, newRefreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, null];
+		return [accessToken, newRefreshToken, expiresIn, null];
 	}
 }
 
@@ -224,6 +207,4 @@ export type Props = {
 	email?: string
 	accessToken: string
 	refreshToken: string
-	accessTokenExpiresAt: number
-	refreshTokenExpiresAt: number
 }
