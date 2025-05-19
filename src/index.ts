@@ -67,21 +67,21 @@ export class MyMCP extends McpAgent<Props, Env> {
     })
 
     // const tool = GenTools.find((tool) => tool.name === 'docx.v1.document.rawContent')
-    for (const tool of [...docxBuiltinTools, ...GenTools]) {
-      if (tool) {
-        this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
-          try {
-            const handler = tool.customHandler || larkOapiHandler
-            return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
-          } catch (error) {
-            return {
-              isError: true,
-              content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
-            }
-          }
-        })
-      }
-    }
+    // for (const tool of [...docxBuiltinTools, ...GenTools]) {
+    //   if (tool) {
+    //     this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
+    //       try {
+    //         const handler = tool.customHandler || larkOapiHandler
+    //         return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
+    //       } catch (error) {
+    //         return {
+    //           isError: true,
+    //           content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
+    //         }
+    //       }
+    //     })
+    //   }
+    // }
   }
 }
 
@@ -94,24 +94,28 @@ export default new OAuthProvider({
   clientRegistrationEndpoint: '/register',
   tokenExchangeCallback: async (options) => {
     // console.log('tokenExchangeCallback', options)
+    if (options.grantType === 'authorization_code') {
+      return {
+        accessTokenProps: options.props,
+      }
+    }
     if (options.grantType === 'refresh_token') {
-      const [accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, errResponse] = await refreshUpstreamAuthToken({
+      const [accessToken, refreshToken, expiresIn, errResponse] = await refreshUpstreamAuthToken({
         refreshToken: options.props.refreshToken,
         upstream_url: 'https://open.feishu.cn/open-apis/authen/v2/oauth/token',
         client_id: env.FEISHU_APP_ID,
         client_secret: env.FEISHU_APP_SECRET,
       })
-      // console.log('refreshUpstreamAuthToken', accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, errResponse)
+      // console.log('refreshUpstreamAuthToken', refreshToken)
       if (errResponse) {
       } else {
         return {
           newProps: {
             ...options.props,
             accessToken: accessToken,
-            refreshToken: refreshToken,
-            accessTokenExpiresAt: accessTokenExpiresAt,
-            refreshTokenExpiresAt: refreshTokenExpiresAt,
+            refreshToken: refreshToken
           },
+          accessTokenTTL: expiresIn,
         }
       }
     }
