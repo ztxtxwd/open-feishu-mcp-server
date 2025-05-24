@@ -13,6 +13,7 @@ import { GenTools } from './mcp-tool/tools/zh/gen-tools'
 import { Client } from '@larksuiteoapi/node-sdk'
 import { env } from 'cloudflare:workers'
 import { oapiHttpInstance } from './utils/http-instance'
+import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools'
 
 const ALLOWED_USER_IDS = new Set([
   // Add Feishu user IDs of users who should have access to the image generation tool
@@ -66,22 +67,37 @@ export class MyMCP extends McpAgent<Props, Env> {
       }
     })
 
-    // const tool = GenTools.find((tool) => tool.name === 'docx.v1.document.rawContent')
-    // for (const tool of [...docxBuiltinTools, ...GenTools]) {
-    //   if (tool) {
-    //     this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
-    //       try {
-    //         const handler = tool.customHandler || larkOapiHandler
-    //         return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
-    //       } catch (error) {
-    //         return {
-    //           isError: true,
-    //           content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
-    //         }
-    //       }
-    //     })
-    //   }
-    // }
+    for (const tool of BuiltinTools) {
+      if (tool) {
+        this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
+          try {
+            const handler = tool.customHandler || larkOapiHandler
+            return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
+          } catch (error) {
+            return {
+              isError: true,
+              content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
+            }
+          }
+        })
+      }
+    }
+    // const tool = GenTools.find((tool) => tool.name === 'drive.v1.fileComment.list')
+    for (const tool of [...GenTools]) {
+      if (tool && (tool.name == 'drive.v1.fileComment.list'||tool.name == 'docx.v1.documentBlock.list')) {
+        this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
+          try {
+            const handler = tool.customHandler || larkOapiHandler
+            return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
+          } catch (error) {
+            return {
+              isError: true,
+              content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
+            }
+          }
+        })
+      }
+    }
   }
 }
 
