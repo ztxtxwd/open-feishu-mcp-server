@@ -1,0 +1,40 @@
+# Project Guidelines for Augment AI
+
+## Repository Information
+- Repository URL: https://github.com/ztxtxwd/feishu-mcp-server.git
+- Workflow: GitHub Flow
+
+## Development Workflow
+1. Create a feature branch from `main` with a descriptive name (e.g., `feature/add-new-component`)
+2. Make changes in your branch
+3. Submit a pull request to `main`
+4. Get code reviewed and approved
+5. Merge the pull request
+6. Delete the feature branch
+
+## Issue Management
+- Create issues using templates from `.github/ISSUE_TEMPLATE` directory
+- Available templates:
+  - Bug report
+  - Feature request
+  - Custom issue
+
+## Branching Strategy
+- Branch naming convention: `feature/`, `bugfix/`, `hotfix/`, `release/`, or `support/` followed by a descriptive name
+- Always branch from `main`
+
+## Commit Guidelines
+- Follow conventional commits format:
+  - `feat`: A new feature
+  - `fix`: A bug fix
+  - `docs`: Documentation changes
+  - `style`: Changes that do not affect the meaning of the code
+  - `refactor`: Code changes that neither fix a bug nor add a feature
+  - `test`: Adding or updating tests
+  - `chore`: Changes to the build process or auxiliary tools
+
+## Pull Request Process
+- Reference related issues in the PR description
+- Ensure all tests pass
+- Update documentation if necessary
+- Get at least one approval before merging

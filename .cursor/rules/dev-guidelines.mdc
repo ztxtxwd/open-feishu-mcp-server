@@ -1,0 +1,47 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 项目开发规范
+
+## 仓库信息
+- Repository URL: https://github.com/ztxtxwd/feishu-mcp-server.git
+- Workflow: GitHub Flow
+
+## 开发流程
+0. 创建 Issue
+1. 从 `main` 创建功能分支，使用描述性名称 (如 `feature/add-new-component`)
+2. 在分支上进行代码修改
+3. 向 `main` 提交 Pull Request
+4. 通过 Code Review 并获得批准
+5. 合并 Pull Request
+6. 删除功能分支
+7. 关闭 Issue
+
+## Issue 管理
+- 使用 `.github/ISSUE_TEMPLATE` 中的模板创建 Issue
+- 可用模板:
+  - Bug report
+  - Feature request
+  - Custom issue
+
+## 分支策略
+- 分支命名规范: `feature/`、`bugfix/`、`hotfix/`、`release/` 或 `support/` 开头，后接描述性名称
+- 所有分支均从 `main` 创建
+
+## 提交信息
+- 遵循 Conventional Commits 格式:
+  - `feat`: 新功能
+  - `fix`: Bug 修复
+  - `docs`: 文档修改
+  - `style`: 不影响代码含义的修改 (空格、格式化等)
+  - `refactor`: 既非修复 Bug 也非新增功能的代码重构
+  - `test`: 新增或更新测试
+  - `chore`: 构建过程或辅助工具的变更
+
+## Pull Request 流程
+- 在 PR 描述中引用相关 Issue
+- 确保所有测试通过
+- 如有必要，更新文档
+- 至少获得一次审批后再合并
