@@ -30,7 +30,7 @@ oapiHttpInstance.interceptors.request.use(
       // console.log('formData', formData);
       // request.data = formData;
     }
-    console.log('request', request);
+    // console.log('request', request);
     return request;
   },
   undefined,

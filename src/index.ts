@@ -14,6 +14,7 @@ import { Client } from '@larksuiteoapi/node-sdk'
 import { env } from 'cloudflare:workers'
 import { oapiHttpInstance } from './utils/http-instance'
 import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools'
+import { RecallTool } from './mcp-tool/document-tool/recall'
 
 const ALLOWED_USER_IDS = new Set([
   // Add Feishu user IDs of users who should have access to the image generation tool
@@ -84,7 +85,7 @@ export class MyMCP extends McpAgent<Props, Env> {
     }
     // const tool = GenTools.find((tool) => tool.name === 'drive.v1.fileComment.list')
     for (const tool of [...GenTools]) {
-      if (tool && (tool.name == 'drive.v1.fileComment.list'||tool.name == 'docx.v1.documentBlock.list')) {
+      if (tool && (tool.name.startsWith('drive.v12.')||tool.name.startsWith('docx.v1.document'))) {
         this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
           try {
             const handler = tool.customHandler || larkOapiHandler
@@ -98,6 +99,13 @@ export class MyMCP extends McpAgent<Props, Env> {
         })
       }
     }
+    this.server.tool(
+      RecallTool.name, 
+      RecallTool.description, 
+      RecallTool.schema, 
+      (params) => RecallTool.handler(params, { userAccessToken: this.props.accessToken, domain: 'https://open.feishu.cn' })
+    )
+    
   }
 }
 

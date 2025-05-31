@@ -8,7 +8,7 @@ const sdkFuncCall = async (client: lark.Client, params: any, options: McpHandler
   if (!sdkName) {
     throw new Error('Invalid sdkName');
   }
-  console.log('params', params);
+  // console.log('params', params);
   const chain = sdkName.split('.');
   let func: any = client;
   for (const element of chain) {
