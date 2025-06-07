@@ -15,6 +15,7 @@ import { env } from 'cloudflare:workers'
 import { oapiHttpInstance } from './utils/http-instance'
 import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools'
 import { RecallTool } from './mcp-tool/document-tool/recall'
+import { docxAddonsMermaidCreate } from './tools/document/addons/mermaid'
 
 const ALLOWED_USER_IDS = new Set([
   // Add Feishu user IDs of users who should have access to the image generation tool
@@ -104,6 +105,21 @@ export class MyMCP extends McpAgent<Props, Env> {
       RecallTool.description, 
       RecallTool.schema, 
       (params) => RecallTool.handler(params, { userAccessToken: this.props.accessToken, domain: 'https://open.feishu.cn' })
+    )
+    
+    // 新增：创建文本绘图文档小组件块工具
+    this.server.tool(docxAddonsMermaidCreate.name, docxAddonsMermaidCreate.description, docxAddonsMermaidCreate.schema,
+      async (params) => {
+        try {
+          return await docxAddonsMermaidCreate.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxAddonsMermaidCreate })
+        } catch (error) {
+          console.error('文本绘图工具执行失败:', error)
+          return {
+            isError: true,
+            content: [{ type: 'text', text: `创建文本绘图块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+          }
+        }
+      }
     )
     
   }

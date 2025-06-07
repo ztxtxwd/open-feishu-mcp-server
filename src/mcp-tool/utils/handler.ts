@@ -4,7 +4,6 @@ import { McpHandler, McpHandlerOptions } from '../types';
 const sdkFuncCall = async (client: lark.Client, params: any, options: McpHandlerOptions) => {
   const { tool, userAccessToken } = options || {};
   const { sdkName, path, httpMethod } = tool || {};
-
   if (!sdkName) {
     throw new Error('Invalid sdkName');
   }
