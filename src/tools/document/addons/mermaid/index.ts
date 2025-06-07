@@ -21,7 +21,7 @@ export const docxAddonsMermaidCreate = {
   description:
     '[Feishu/Lark]-云文档-文档-块-创建文本绘图文档小组件块，并插入到指定位置。如果操作成功，接口将返回新创建块的富文本内容',
   accessTokens: ['tenant', 'user'],
-  schema: MermaidSchema,
+  schema: MermaidSchema.shape,
   customHandler: async (client: Client, params: z.infer<typeof MermaidSchema>, options: any) => {
     // 参数验证
     const validatedParams = MermaidSchema.parse(params)
