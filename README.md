@@ -152,12 +152,20 @@ The MCP Remote library enables your server to expose tools that can be invoked b
 - Maintains the Server-Sent Events (SSE) connection between clients and your server
 
 #### Feishu MCP Tools
-This project integrates tools based on the official Feishu/Lark MCP library, including:
-- Document operations: search and import cloud documents
-- Message sending: batch send messages, create app feed cards
-- Task management: create tasks, comments, tasklists
-- AI capabilities: optical character recognition
-- Feishu dictionary: get repository lists, entity management
-- Helpdesk features: send ticket messages
 
-These tools use User Access Tokens for authentication, ensuring secure access to Feishu APIs.
+**Development Direction**: This project is gradually transitioning from using the official Feishu/Lark MCP library to implementing custom tools for better control and performance. We are phasing out the official library in favor of self-developed tools.
+
+**Current Tool Status**:
+- **Custom Tools** (actively developed):
+  - `docx.block.tree`: Recursively retrieves complete document block tree structure with index marking and hierarchy information
+  - `docx.addons.mermaid.create`: Creates Mermaid diagram components in documents with theme support
+  
+- **Legacy Tools** (based on official library, being phased out):
+  - Document operations: search and import cloud documents
+  - Message sending: batch send messages, create app feed cards
+  - Task management: create tasks, comments, tasklists
+  - AI capabilities: optical character recognition
+  - Feishu dictionary: get repository lists, entity management
+  - Helpdesk features: send ticket messages
+
+All tools use User Access Tokens for authentication, ensuring secure access to Feishu APIs. The custom tools provide enhanced functionality with better error handling and performance optimization.
