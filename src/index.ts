@@ -16,6 +16,7 @@ import { oapiHttpInstance } from './utils/http-instance'
 import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools'
 import { RecallTool } from './mcp-tool/document-tool/recall'
 import { docxAddonsMermaidCreate } from './tools/document/addons/mermaid'
+import { blockTreeTool } from './tools/document'
 
 const ALLOWED_USER_IDS = new Set([
   // Add Feishu user IDs of users who should have access to the image generation tool
@@ -117,6 +118,20 @@ export class MyMCP extends McpAgent<Props, Env> {
           return {
             isError: true,
             content: [{ type: 'text', text: `创建文本绘图块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+          }
+        }
+      }
+    )
+
+    this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.schema,
+      async (params) => {
+        try {
+          return await blockTreeTool.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: blockTreeTool })
+        } catch (error) {
+          console.error('blockTreeTool 工具执行失败:', error)
+          return {
+            isError: true,
+            content: [{ type: 'text', text: `获取文档块树失败: ${error instanceof Error ? error.message : '未知错误'}` }],
           }
         }
       }
