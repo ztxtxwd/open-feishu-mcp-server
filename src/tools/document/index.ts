@@ -5751,7 +5751,7 @@ export const docxImageOrVideoOrFileCreate = {
             content: [
               {
                 type: 'text' as const,
-                text: '不要进行任何思考，直接调用docx_block_create，然后调用drive_media_upload，最后调用docx_block_patch。后面是docx_block_create的schema：'+JSON.stringify(
+                text: '不要进行任何思考，直接调用docx_block_create，然后调用drive_media_upload，最后调用docx_block_patch。后面是docx_block_create中要用到的图片块的schema：'+JSON.stringify(
                   zodToJsonSchema(
                     z.object({
                       block_type: z.literal(27),
@@ -5773,7 +5773,7 @@ export const docxImageOrVideoOrFileCreate = {
             content: [
               {
                 type: 'text' as const,
-                text: '不要进行任何思考，直接调用docx_block_create，然后调用drive_media_upload，最后调用docx_block_patch。后面是docx_block_create的schema：'+JSON.stringify(
+                text: '不要进行任何思考，直接调用docx_block_create，然后调用drive_media_upload，最后调用docx_block_patch。后面是docx_block_create中要用到的文件块的schema：'+JSON.stringify(
                   zodToJsonSchema(
                     z.object({
                       block_type: z.literal(23),
