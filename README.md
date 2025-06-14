@@ -4,11 +4,9 @@
 
 这是一个支持远程连接的[模型上下文协议 (MCP)](https://modelcontextprotocol.io/introduction) 服务器，内置了飞书 OAuth 认证。
 
-本项目修改自 [cloudflare/ai/demos/remote-mcp-github-oauth](https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-github-oauth)，将 GitHub OAuth 替换为飞书 OAuth，并集成了基于飞书官方 MCP 库（Feishu/Lark OpenAPI MCP）的工具。
+本项目修改自 [cloudflare/ai/demos/remote-mcp-github-oauth](https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-github-oauth)，将 GitHub OAuth 替换为飞书 OAuth。
 
 您可以将其部署到自己的 Cloudflare 账户，并在创建自己的飞书 OAuth 客户端应用后，拥有一个功能完整的远程 MCP 服务器。用户可以通过飞书账号登录连接到您的 MCP 服务器。
-
-您可以将此项目作为参考示例，了解如何使用 [`workers-oauth-provider` 库](https://github.com/cloudflare/workers-oauth-provider) 将其他 OAuth 提供商与部署到 Cloudflare 的 MCP 服务器集成。
 
 MCP 服务器（由 [Cloudflare Workers](https://developers.cloudflare.com/workers/) 提供支持）：
 
@@ -21,57 +19,62 @@ MCP 服务器（由 [Cloudflare Workers](https://developers.cloudflare.com/worke
 
 ### 生产环境配置
 
+#### 1. 创建飞书应用
+
 在[飞书开放平台](https://open.feishu.cn/)创建一个新的飞书应用：
 1. 访问[飞书开放平台](https://open.feishu.cn/)并登录
 2. 点击"开发者后台"并创建一个新应用
 3. 在应用设置中：
-   - 进入"安全设置"并添加重定向 URL：`https://mcp-feishu-oauth.<your-subdomain>.workers.dev/callback`
    - 进入"权限与功能"并添加以下权限：
      - "获取用户 ID" (auth:user.id:read)
      - "获取用户任务信息" (task:task:read)
      - "获取用户授权凭证" (offline_access)
      - "获取用户基本信息" (user_profile)
    - 记下您的应用 ID 和应用密钥
-4. 通过 Wrangler 设置密钥
+
+#### 2. 配置 Wrangler 密钥
+
+通过 Wrangler 设置密钥：
 ```bash
 wrangler secret put FEISHU_APP_ID
 wrangler secret put FEISHU_APP_SECRET
 wrangler secret put COOKIE_ENCRYPTION_KEY # 在此处添加任意随机字符串，例如 openssl rand -hex 32
 ```
 
-#### 设置 KV 命名空间
+#### 3. 设置 KV 命名空间
 - 创建 KV 命名空间：
 `wrangler kv:namespace create "OAUTH_KV"`
 - 使用 KV ID 更新 Wrangler 文件
 
-#### 部署和测试
-部署 MCP 服务器，使其在您的 workers.dev 域名上可用
+#### 4. 部署服务器
+部署 MCP 服务器，使其在您的 workers.dev 域名上可用：
 `wrangler deploy`
+
+部署完成后，记下您的实际 subdomain（会在部署日志中显示）。
+
+#### 5. 配置重定向 URL
+
+部署完成后，回到飞书应用设置：
+1. 进入"安全设置"
+2. 添加重定向 URL：`https://feishu-mcp-server.<your-actual-subdomain>.workers.dev/callback`
+   （将 `<your-actual-subdomain>` 替换为您在部署后获得的实际 subdomain）
+
+#### 测试部署
 
 使用 [Inspector](https://modelcontextprotocol.io/docs/tools/inspector) 测试远程服务器：
 
 ```
 npx @modelcontextprotocol/inspector@latest
 ```
-输入 `https://mcp-feishu-oauth.<your-subdomain>.workers.dev/sse` 并点击连接。完成身份验证流程后，您将看到工具正常工作。
+输入 `https://feishu-mcp-server.<your-subdomain>.workers.dev/sse` 并点击连接。完成身份验证流程后，您将看到工具正常工作。
 
 现在，您已经部署了一个带有飞书 OAuth 认证的远程 MCP 服务器！
 
 ### 访问控制
 
-此 MCP 服务器使用飞书 OAuth 进行身份验证。所有经过身份验证的飞书用户都可以访问基本工具，如 "add" 和 "userInfoFeishu"。
+此 MCP 服务器使用飞书 OAuth 进行身份验证。所有经过身份验证的飞书用户都可以访问所有工具。
 
-"generateImage" 工具仅限于 `ALLOWED_USER_IDS` 配置中列出的特定飞书用户：
-
-```typescript
-// 添加有权访问图像生成的飞书用户 ID
-const ALLOWED_USER_IDS = new Set([
-  'ou_xxxxxxxxxxxxxxxx',
-  'ou_yyyyyyyyyyyyyyyy'
-]);
-```
-
-您可以使用 "userInfoFeishu" 工具获取用户的 ID，查看响应中的 `user_id` 字段。
+您可以使用 "user_info" 工具获取用户信息。
 
 ### 从 Claude Desktop 访问远程 MCP 服务器
 
@@ -86,14 +89,12 @@ const ALLOWED_USER_IDS = new Set([
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://mcp-feishu-oauth.<your-subdomain>.workers.dev/sse"
+        "https://my-mcp-server.<your-subdomain>.workers.dev/sse"
       ]
     }
   }
 }
 ```
-
-一旦工具（在 🔨 下）出现在界面中，您就可以要求 Claude 使用它们。例如："能否使用数学工具将 23 和 19 相加？"。Claude 应该会调用该工具并显示 MCP 服务器生成的结果。
 
 ### 本地开发环境
 
@@ -126,8 +127,6 @@ COOKIE_ENCRYPTION_KEY=any_random_string_here
 #### 使用 Cursor 和其他 MCP 客户端
 
 要将 Cursor 与您的 MCP 服务器连接，选择 `Type`："Command"，在 `Command` 字段中，将命令和参数字段合并为一个（例如 `npx mcp-remote https://<your-worker-name>.<your-subdomain>.workers.dev/sse`）。
-
-请注意，虽然 Cursor 支持 HTTP+SSE 服务器，但它不支持身份验证，因此您仍需使用 `mcp-remote`（并使用 STDIO 服务器，而不是 HTTP 服务器）。
 
 您可以通过打开客户端的配置文件，添加与 Claude 设置相同的 JSON，并重启 MCP 客户端，将 MCP 服务器连接到其他 MCP 客户端，如 Windsurf。
 

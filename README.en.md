@@ -20,31 +20,48 @@ The MCP server (powered by [Cloudflare Workers](https://developers.cloudflare.co
 Clone the repo directly & install dependencies: `npm install`.
 
 ### For Production
+
+#### 1. Create Feishu Application
+
 Create a new Feishu application on the [Feishu Open Platform](https://open.feishu.cn/):
 1. Go to the [Feishu Open Platform](https://open.feishu.cn/) and log in
 2. Click "Developer Console" and create a new application
 3. In the application settings:
-   - Go to "Security Settings" and add the redirect URL: `https://mcp-feishu-oauth.<your-subdomain>.workers.dev/callback`
    - Go to "Permission & Scopes" and add the following permissions:
      - "获取用户 ID" (auth:user.id:read)
      - "获取用户任务信息" (task:task:read)
      - "获取用户授权凭证" (offline_access)
      - "获取用户基本信息" (user_profile)
    - Note your App ID and App Secret
-4. Set secrets via Wrangler
+
+#### 2. Configure Wrangler Secrets
+
+Set secrets via Wrangler:
 ```bash
 wrangler secret put FEISHU_APP_ID
 wrangler secret put FEISHU_APP_SECRET
 wrangler secret put COOKIE_ENCRYPTION_KEY # add any random string here e.g. openssl rand -hex 32
 ```
-#### Set up a KV namespace
+
+#### 3. Set up KV Namespace
 - Create the KV namespace:
 `wrangler kv:namespace create "OAUTH_KV"`
 - Update the Wrangler file with the KV ID
 
-#### Deploy & Test
-Deploy the MCP server to make it available on your workers.dev domain
+#### 4. Deploy Server
+Deploy the MCP server to make it available on your workers.dev domain:
 `wrangler deploy`
+
+After deployment, note your actual subdomain (it will be shown in the deployment logs).
+
+#### 5. Configure Redirect URL
+
+After deployment, go back to your Feishu application settings:
+1. Go to "Security Settings"
+2. Add the redirect URL: `https://mcp-feishu-oauth.<your-actual-subdomain>.workers.dev/callback`
+   (Replace `<your-actual-subdomain>` with your actual subdomain obtained after deployment)
+
+#### Test Deployment
 
 Test the remote server using [Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
 
@@ -57,19 +74,9 @@ You now have a remote MCP server deployed with Feishu OAuth authentication!
 
 ### Access Control
 
-This MCP server uses Feishu OAuth for authentication. All authenticated Feishu users can access basic tools like "add" and "userInfoFeishu".
+This MCP server uses Feishu OAuth for authentication. All authenticated Feishu users can access all tools.
 
-The "generateImage" tool is restricted to specific Feishu users listed in the `ALLOWED_USER_IDS` configuration:
-
-```typescript
-// Add Feishu user IDs for image generation access
-const ALLOWED_USER_IDS = new Set([
-  'ou_xxxxxxxxxxxxxxxx',
-  'ou_yyyyyyyyyyyyyyyy'
-]);
-```
-
-You can get a user's ID by using the "userInfoFeishu" tool and looking at the `user_id` field in the response.
+You can use the "user_info" tool to get user information.
 
 ### Access the remote MCP server from Claude Desktop
 
