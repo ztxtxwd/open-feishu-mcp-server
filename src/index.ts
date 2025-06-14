@@ -16,7 +16,9 @@ import { oapiHttpInstance } from './utils/http-instance'
 import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools'
 import { RecallTool } from './mcp-tool/document-tool/recall'
 import { docxAddonsMermaidCreate } from './tools/document/addons/mermaid'
-import { blockTreeTool } from './tools/document'
+import { blockTreeTool, docxBlockPatch, docxImageOrVideoOrFileCreate, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document'
+import { mediaUploadTool } from './tools/drive'
+import { zodToJsonSchema } from 'zod-to-json-schema'
 
 const ALLOWED_USER_IDS = new Set([
   // Add Feishu user IDs of users who should have access to the image generation tool
@@ -86,57 +88,128 @@ export class MyMCP extends McpAgent<Props, Env> {
       }
     }
     // const tool = GenTools.find((tool) => tool.name === 'drive.v1.fileComment.list')
-    for (const tool of [...GenTools]) {
-      if (tool && (tool.name.startsWith('drive.v12.')||tool.name.startsWith('docx.v1.document'))) {
-        this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
-          try {
-            const handler = tool.customHandler || larkOapiHandler
-            return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
-          } catch (error) {
-            return {
-              isError: true,
-              content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
-            }
-          }
-        })
-      }
-    }
-    this.server.tool(
-      RecallTool.name, 
-      RecallTool.description, 
-      RecallTool.schema, 
-      (params) => RecallTool.handler(params, { userAccessToken: this.props.accessToken, domain: 'https://open.feishu.cn' })
-    )
-    
-    // 新增：创建文本绘图文档小组件块工具
-    this.server.tool(docxAddonsMermaidCreate.name, docxAddonsMermaidCreate.description, docxAddonsMermaidCreate.schema,
-      async (params) => {
-        try {
-          return await docxAddonsMermaidCreate.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxAddonsMermaidCreate })
-        } catch (error) {
-          console.error('文本绘图工具执行失败:', error)
-          return {
-            isError: true,
-            content: [{ type: 'text', text: `创建文本绘图块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-          }
-        }
-      }
+    // for (const tool of [...GenTools]) {
+    //   if (tool && (tool.name.startsWith('drive.v12.') || tool.name.startsWith('docx.v1.document'))) {
+    //     this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
+    //       try {
+    //         const handler = tool.customHandler || larkOapiHandler
+    //         return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
+    //       } catch (error) {
+    //         return {
+    //           isError: true,
+    //           content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
+    //         }
+    //       }
+    //     })
+    //   }
+    // }
+    this.server.tool(RecallTool.name, RecallTool.description, RecallTool.schema, (params) =>
+      RecallTool.handler(params, { userAccessToken: this.props.accessToken, domain: 'https://open.feishu.cn' }),
     )
 
-    this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.schema,
-      async (params) => {
-        try {
-          return await blockTreeTool.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: blockTreeTool })
-        } catch (error) {
-          console.error('blockTreeTool 工具执行失败:', error)
-          return {
-            isError: true,
-            content: [{ type: 'text', text: `获取文档块树失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-          }
+    // 新增：创建文本绘图文档小组件块工具
+    this.server.tool(docxAddonsMermaidCreate.name, docxAddonsMermaidCreate.description, docxAddonsMermaidCreate.schema, async (params) => {
+      try {
+        return await docxAddonsMermaidCreate.customHandler(client, params, {
+          userAccessToken: this.props.accessToken,
+          tool: docxAddonsMermaidCreate,
+        })
+      } catch (error) {
+        console.error('文本绘图工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `创建文本绘图块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
         }
       }
+    })
+
+    this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.schema, async (params) => {
+      try {
+        return await blockTreeTool.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: blockTreeTool })
+      } catch (error) {
+        console.error('blockTreeTool 工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `获取文档块树失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+        }
+      }
+    })
+    this.server.tool(
+      docxV1BlockTypeSchemaGet.name,
+      docxV1BlockTypeSchemaGet.description,
+      docxV1BlockTypeSchemaGet.schema,
+      async (params) => {
+        try {
+          return await docxV1BlockTypeSchemaGet.customHandler(client, params, {
+            userAccessToken: this.props.accessToken,
+            tool: docxV1BlockTypeSchemaGet,
+          })
+        } catch (error) {
+          console.error('docxV1BlockTypeSchemaGet 工具执行失败:', error)
+          return {
+            isError: true,
+            content: [{ type: 'text', text: `获取块类型 schema 失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+          }
+        }
+      },
     )
-    
+    this.server.tool(
+      docxV1DocumentBlockChildrenCreateSimple.name,
+      docxV1DocumentBlockChildrenCreateSimple.description,
+      docxV1DocumentBlockChildrenCreateSimple.schema,
+      async (params) => {
+        try {
+          return await docxV1DocumentBlockChildrenCreateSimple.customHandler(client, params, {
+            userAccessToken: this.props.accessToken,
+            tool: docxV1DocumentBlockChildrenCreateSimple,
+          })
+        } catch (error) {
+          console.error('docxV1DocumentBlockChildrenCreateSimple 工具执行失败:', error)
+          return {
+            isError: true,
+            content: [{ type: 'text', text: `创建块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+          }
+        }
+      },
+    )
+
+    this.server.tool(mediaUploadTool.name, mediaUploadTool.description, mediaUploadTool.schema, async (params) => {
+      try {
+        return await mediaUploadTool.customHandler(params, { userAccessToken: this.props.accessToken })
+      } catch (error) {
+        console.error('mediaUploadTool 工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `mediaUploadTool 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+        }
+      }
+    })
+
+    this.server.tool(docxBlockPatch.name, docxBlockPatch.description, docxBlockPatch.schema, async (params) => {
+      try {
+        return await docxBlockPatch.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockPatch })
+      } catch (error) {
+        console.error('docxBlockPatch 工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `docxBlockPatch 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+        }
+      }
+    })
+
+    this.server.tool(docxV1DocumentTableCreate.name, docxV1DocumentTableCreate.description, docxV1DocumentTableCreate.schema, async (params) => {
+      try {
+        return await docxV1DocumentTableCreate.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxV1DocumentTableCreate })
+      } catch (error) {
+        console.error('docxV1DocumentTableCreate 工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `docxV1DocumentTableCreate 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+        }
+      }
+    })
+
+    this.server.tool(docxImageOrVideoOrFileCreate.name, docxImageOrVideoOrFileCreate.description, docxImageOrVideoOrFileCreate.schema, docxImageOrVideoOrFileCreate.customHandler)
   }
 }
 
@@ -168,7 +241,7 @@ export default new OAuthProvider({
           newProps: {
             ...options.props,
             accessToken: accessToken,
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
           },
           accessTokenTTL: expiresIn,
         }
