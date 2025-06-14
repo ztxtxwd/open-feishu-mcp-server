@@ -18,7 +18,6 @@ You can deploy it to your own Cloudflare account, and after creating your own Fe
   - [Local Development Environment](#local-development-environment)
 - [Client Integration](#-client-integration)
   - [Testing with Inspector](#testing-with-inspector)
-  - [Using Claude Desktop](#using-claude-desktop)
   - [Using Cursor](#using-cursor)
   - [Using ChatWise](#using-chatwise)
 - [Access Control](#-access-control)

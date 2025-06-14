@@ -18,7 +18,6 @@
   - [本地开发环境](#本地开发环境)
 - [客户端集成](#-客户端集成)
   - [使用 Inspector 测试](#使用-inspector-测试)
-  - [使用 Claude Desktop](#使用-claude-desktop)
   - [使用 Cursor](#使用-cursor)
   - [使用 ChatWise](#使用-chatwise)
 - [访问控制](#-访问控制)
