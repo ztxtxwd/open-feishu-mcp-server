@@ -12,7 +12,7 @@
  */
 export function addMermaidBlockMarkers(
   markdown: string, 
-  marker: string = '%% mermaid-block',
+  marker: string = '%% mermaid',
   position: 'start' | 'end' = 'start'
 ): string {
   // Regular expression to match mermaid code blocks

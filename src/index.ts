@@ -16,7 +16,7 @@ import { oapiHttpInstance } from './utils/http-instance'
 import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools'
 import { RecallTool } from './mcp-tool/document-tool/recall'
 import { docxAddonsMermaidCreate } from './tools/document/addons/mermaid'
-import { blockTreeTool, docxBlockPatch, docxImageOrVideoOrFileCreate, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document'
+import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document'
 import { mediaUploadTool } from './tools/drive'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 
@@ -210,6 +210,30 @@ export class MyMCP extends McpAgent<Props, Env> {
     })
 
     this.server.tool(docxImageOrVideoOrFileCreate.name, docxImageOrVideoOrFileCreate.description, docxImageOrVideoOrFileCreate.schema, docxImageOrVideoOrFileCreate.customHandler)
+
+    this.server.tool(docxMarkdownImport.name, docxMarkdownImport.description, docxMarkdownImport.schema, async (params) => {
+      try {
+        return await docxMarkdownImport.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownImport })
+      } catch (error) {
+        console.error('docxMarkdownImport 工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `docxMarkdownImport 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+        }
+      }
+    })
+
+    this.server.tool(docxBlockBatchDelete.name, docxBlockBatchDelete.description, docxBlockBatchDelete.schema, async (params) => {
+      try {
+        return await docxBlockBatchDelete.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockBatchDelete })
+      } catch (error) {
+        console.error('docxBlockBatchDelete 工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `docxBlockBatchDelete 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+        }
+      }
+    })
   }
 }
 
