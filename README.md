@@ -1,81 +1,83 @@
-# Model Context Protocol (MCP) Server + Feishu OAuth
+# 模型上下文协议 (MCP) 服务器 + 飞书 OAuth
 
-[中文文档](README.zh.md)
+[English Documentation](README.en.md)
 
-This is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) server that supports remote MCP connections, with Feishu OAuth built-in.
+这是一个支持远程连接的[模型上下文协议 (MCP)](https://modelcontextprotocol.io/introduction) 服务器，内置了飞书 OAuth 认证。
 
-This project is modified from [cloudflare/ai/demos/remote-mcp-github-oauth](https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-github-oauth), replacing GitHub OAuth with Feishu OAuth and integrating tools based on the official Feishu/Lark OpenAPI MCP library.
+本项目修改自 [cloudflare/ai/demos/remote-mcp-github-oauth](https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-github-oauth)，将 GitHub OAuth 替换为飞书 OAuth，并集成了基于飞书官方 MCP 库（Feishu/Lark OpenAPI MCP）的工具。
 
-You can deploy it to your own Cloudflare account, and after you create your own Feishu OAuth client app, you'll have a fully functional remote MCP server that you can build off. Users will be able to connect to your MCP server by signing in with their Feishu account.
+您可以将其部署到自己的 Cloudflare 账户，并在创建自己的飞书 OAuth 客户端应用后，拥有一个功能完整的远程 MCP 服务器。用户可以通过飞书账号登录连接到您的 MCP 服务器。
 
-You can use this as a reference example for how to integrate other OAuth providers with an MCP server deployed to Cloudflare, using the [`workers-oauth-provider` library](https://github.com/cloudflare/workers-oauth-provider).
+您可以将此项目作为参考示例，了解如何使用 [`workers-oauth-provider` 库](https://github.com/cloudflare/workers-oauth-provider) 将其他 OAuth 提供商与部署到 Cloudflare 的 MCP 服务器集成。
 
-The MCP server (powered by [Cloudflare Workers](https://developers.cloudflare.com/workers/)):
+MCP 服务器（由 [Cloudflare Workers](https://developers.cloudflare.com/workers/) 提供支持）：
 
-* Acts as OAuth _Server_ to your MCP clients
-* Acts as OAuth _Client_ to your _real_ OAuth server (in this case, Feishu)
+* 对您的 MCP 客户端充当 OAuth _服务器_
+* 对您的_真实_ OAuth 服务器（在本例中为飞书）充当 OAuth _客户端_
 
-## Getting Started
+## 开始使用
 
-Clone the repo directly & install dependencies: `npm install`.
+直接克隆仓库并安装依赖：`npm install`。
 
-### For Production
-Create a new Feishu application on the [Feishu Open Platform](https://open.feishu.cn/):
-1. Go to the [Feishu Open Platform](https://open.feishu.cn/) and log in
-2. Click "Developer Console" and create a new application
-3. In the application settings:
-   - Go to "Security Settings" and add the redirect URL: `https://mcp-feishu-oauth.<your-subdomain>.workers.dev/callback`
-   - Go to "Permission & Scopes" and add the following permissions:
+### 生产环境配置
+
+在[飞书开放平台](https://open.feishu.cn/)创建一个新的飞书应用：
+1. 访问[飞书开放平台](https://open.feishu.cn/)并登录
+2. 点击"开发者后台"并创建一个新应用
+3. 在应用设置中：
+   - 进入"安全设置"并添加重定向 URL：`https://mcp-feishu-oauth.<your-subdomain>.workers.dev/callback`
+   - 进入"权限与功能"并添加以下权限：
      - "获取用户 ID" (auth:user.id:read)
      - "获取用户任务信息" (task:task:read)
      - "获取用户授权凭证" (offline_access)
      - "获取用户基本信息" (user_profile)
-   - Note your App ID and App Secret
-4. Set secrets via Wrangler
+   - 记下您的应用 ID 和应用密钥
+4. 通过 Wrangler 设置密钥
 ```bash
 wrangler secret put FEISHU_APP_ID
 wrangler secret put FEISHU_APP_SECRET
-wrangler secret put COOKIE_ENCRYPTION_KEY # add any random string here e.g. openssl rand -hex 32
+wrangler secret put COOKIE_ENCRYPTION_KEY # 在此处添加任意随机字符串，例如 openssl rand -hex 32
 ```
-#### Set up a KV namespace
-- Create the KV namespace:
+
+#### 设置 KV 命名空间
+- 创建 KV 命名空间：
 `wrangler kv:namespace create "OAUTH_KV"`
-- Update the Wrangler file with the KV ID
+- 使用 KV ID 更新 Wrangler 文件
 
-#### Deploy & Test
-Deploy the MCP server to make it available on your workers.dev domain
-` wrangler deploy`
+#### 部署和测试
+部署 MCP 服务器，使其在您的 workers.dev 域名上可用
+`wrangler deploy`
 
-Test the remote server using [Inspector](https://modelcontextprotocol.io/docs/tools/inspector):
+使用 [Inspector](https://modelcontextprotocol.io/docs/tools/inspector) 测试远程服务器：
 
 ```
 npx @modelcontextprotocol/inspector@latest
 ```
-Enter `https://mcp-feishu-oauth.<your-subdomain>.workers.dev/sse` and hit connect. Once you go through the authentication flow, you'll see the Tools working.
+输入 `https://mcp-feishu-oauth.<your-subdomain>.workers.dev/sse` 并点击连接。完成身份验证流程后，您将看到工具正常工作。
 
-You now have a remote MCP server deployed with Feishu OAuth authentication!
+现在，您已经部署了一个带有飞书 OAuth 认证的远程 MCP 服务器！
 
-### Access Control
+### 访问控制
 
-This MCP server uses Feishu OAuth for authentication. All authenticated Feishu users can access basic tools like "add" and "userInfoFeishu".
+此 MCP 服务器使用飞书 OAuth 进行身份验证。所有经过身份验证的飞书用户都可以访问基本工具，如 "add" 和 "userInfoFeishu"。
 
-The "generateImage" tool is restricted to specific Feishu users listed in the `ALLOWED_USER_IDS` configuration:
+"generateImage" 工具仅限于 `ALLOWED_USER_IDS` 配置中列出的特定飞书用户：
 
 ```typescript
-// Add Feishu user IDs for image generation access
+// 添加有权访问图像生成的飞书用户 ID
 const ALLOWED_USER_IDS = new Set([
   'ou_xxxxxxxxxxxxxxxx',
   'ou_yyyyyyyyyyyyyyyy'
 ]);
 ```
 
-You can get a user's ID by using the "userInfoFeishu" tool and looking at the `user_id` field in the response.
+您可以使用 "userInfoFeishu" 工具获取用户的 ID，查看响应中的 `user_id` 字段。
 
-### Access the remote MCP server from Claude Desktop
+### 从 Claude Desktop 访问远程 MCP 服务器
 
-Open Claude Desktop and navigate to Settings -> Developer -> Edit Config. This opens the configuration file that controls which MCP servers Claude can access.
+打开 Claude Desktop 并导航到 Settings -> Developer -> Edit Config。这将打开控制 Claude 可以访问哪些 MCP 服务器的配置文件。
 
-Replace the content with the following configuration. Once you restart Claude Desktop, a browser window will open showing your Feishu OAuth login page. Complete the authentication flow to grant Claude access to your MCP server. After you grant access, the tools will become available for you to use.
+用以下配置替换内容。重启 Claude Desktop 后，将打开一个浏览器窗口，显示您的飞书 OAuth 登录页面。完成身份验证流程，授予 Claude 访问您的 MCP 服务器的权限。授予访问权限后，工具将可供您使用。
 
 ```
 {
@@ -91,81 +93,82 @@ Replace the content with the following configuration. Once you restart Claude De
 }
 ```
 
-Once the Tools (under 🔨) show up in the interface, you can ask Claude to use them. For example: "Could you use the math tool to add 23 and 19?". Claude should invoke the tool and show the result generated by the MCP server.
+一旦工具（在 🔨 下）出现在界面中，您就可以要求 Claude 使用它们。例如："能否使用数学工具将 23 和 19 相加？"。Claude 应该会调用该工具并显示 MCP 服务器生成的结果。
 
-### For Local Development
-If you'd like to iterate and test your MCP server, you can do so in local development. This will require you to create another Feishu application or configure your existing one:
-1. In your Feishu application settings:
-   - Go to "Security Settings" and add the redirect URL: `http://localhost:8788/callback`
-   - Make sure you have the following permissions:
+### 本地开发环境
+
+如果您想迭代和测试您的 MCP 服务器，可以在本地开发环境中进行。这需要您创建另一个飞书应用或配置现有应用：
+1. 在您的飞书应用设置中：
+   - 进入"安全设置"并添加重定向 URL：`http://localhost:8788/callback`
+   - 确保您拥有以下权限：
      - "获取用户 ID" (auth:user.id:read)
      - "获取用户任务信息" (task:task:read)
      - "获取用户授权凭证" (offline_access)
      - "获取用户基本信息" (user_profile)
-   - Note your App ID and App Secret
-2. Create a `.dev.vars` file in your project root with:
+   - 记下您的应用 ID 和应用密钥
+2. 在项目根目录创建一个 `.dev.vars` 文件，内容如下：
 ```
 FEISHU_APP_ID=your_development_feishu_app_id
 FEISHU_APP_SECRET=your_development_feishu_app_secret
 COOKIE_ENCRYPTION_KEY=any_random_string_here
 ```
 
-#### Develop & Test
-Run the server locally to make it available at `http://localhost:8788`
+#### 开发和测试
+在本地运行服务器，使其在 `http://localhost:8788` 可用
 `wrangler dev`
 
-To test the local server, enter `http://localhost:8788/sse` into Inspector and hit connect. Once you follow the prompts, you'll be able to "List Tools".
+要测试本地服务器，在 Inspector 中输入 `http://localhost:8788/sse` 并点击连接。按照提示操作后，您将能够"列出工具"。
 
-#### Using Claude and other MCP Clients
+#### 使用 Claude 和其他 MCP 客户端
 
-When using Claude to connect to your remote MCP server, you may see some error messages. This is because Claude Desktop doesn't yet support remote MCP servers, so it sometimes gets confused. To verify whether the MCP server is connected, hover over the 🔨 icon in the bottom right corner of Claude's interface. You should see your tools available there.
+当使用 Claude 连接到您的远程 MCP 服务器时，您可能会看到一些错误消息。这是因为 Claude Desktop 尚不完全支持远程 MCP 服务器，所以有时会出现混淆。要验证 MCP 服务器是否已连接，请将鼠标悬停在 Claude 界面右下角的 🔨 图标上。您应该会看到您的工具在那里可用。
 
-#### Using Cursor and other MCP Clients
+#### 使用 Cursor 和其他 MCP 客户端
 
-To connect Cursor with your MCP server, choose `Type`: "Command" and in the `Command` field, combine the command and args fields into one (e.g. `npx mcp-remote https://<your-worker-name>.<your-subdomain>.workers.dev/sse`).
+要将 Cursor 与您的 MCP 服务器连接，选择 `Type`："Command"，在 `Command` 字段中，将命令和参数字段合并为一个（例如 `npx mcp-remote https://<your-worker-name>.<your-subdomain>.workers.dev/sse`）。
 
-Note that while Cursor supports HTTP+SSE servers, it doesn't support authentication, so you still need to use `mcp-remote` (and to use a STDIO server, not an HTTP one).
+请注意，虽然 Cursor 支持 HTTP+SSE 服务器，但它不支持身份验证，因此您仍需使用 `mcp-remote`（并使用 STDIO 服务器，而不是 HTTP 服务器）。
 
-You can connect your MCP server to other MCP clients like Windsurf by opening the client's configuration file, adding the same JSON that was used for the Claude setup, and restarting the MCP client.
+您可以通过打开客户端的配置文件，添加与 Claude 设置相同的 JSON，并重启 MCP 客户端，将 MCP 服务器连接到其他 MCP 客户端，如 Windsurf。
 
-## How does it work?
+## 工作原理
 
 #### OAuth Provider
-The OAuth Provider library serves as a complete OAuth 2.1 server implementation for Cloudflare Workers. It handles the complexities of the OAuth flow, including token issuance, validation, and management. In this project, it plays the dual role of:
+OAuth Provider 库是 Cloudflare Workers 的完整 OAuth 2.1 服务器实现。它处理 OAuth 流程的复杂性，包括令牌颁发、验证和管理。在此项目中，它扮演双重角色：
 
-- Authenticating MCP clients that connect to your server
-- Managing the connection to Feishu's OAuth services
-- Securely storing tokens and authentication state in KV storage
+- 对连接到您服务器的 MCP 客户端进行身份验证
+- 管理与飞书 OAuth 服务的连接
+- 在 KV 存储中安全地存储令牌和身份验证状态
 
 #### Durable MCP
-Durable MCP extends the base MCP functionality with Cloudflare's Durable Objects, providing:
-- Persistent state management for your MCP server
-- Secure storage of authentication context between requests
-- Access to authenticated user information via `this.props`
-- Support for conditional tool availability based on user identity
+Durable MCP 通过 Cloudflare 的 Durable Objects 扩展了基本 MCP 功能，提供：
+- MCP 服务器的持久状态管理
+- 请求之间安全存储身份验证上下文
+- 通过 `this.props` 访问已验证的用户信息
+- 基于用户身份支持条件工具可用性
 
 #### MCP Remote
-The MCP Remote library enables your server to expose tools that can be invoked by MCP clients like the Inspector. It:
-- Defines the protocol for communication between clients and your server
-- Provides a structured way to define tools
-- Handles serialization and deserialization of requests and responses
-- Maintains the Server-Sent Events (SSE) connection between clients and your server
+MCP Remote 库使您的服务器能够公开可由 MCP 客户端（如 Inspector）调用的工具。它：
+- 定义客户端和服务器之间通信的协议
+- 提供定义工具的结构化方式
+- 处理请求和响应的序列化和反序列化
+- 维护客户端和服务器之间的服务器发送事件 (SSE) 连接
 
-#### Feishu MCP Tools
+#### 飞书 MCP 工具
 
-**Development Direction**: This project is gradually transitioning from using the official Feishu/Lark MCP library to implementing custom tools for better control and performance. We are phasing out the official library in favor of self-developed tools.
+**发展方向**：本项目正在逐步从使用飞书官方 MCP 库过渡到实现自定义工具，以获得更好的控制和性能。我们正在淘汰官方库，转而使用自主开发的工具。
 
-**Current Tool Status**:
-- **Custom Tools** (actively developed):
-  - `docx.block.tree`: Recursively retrieves complete document block tree structure with index marking and hierarchy information
-  - `docx.addons.mermaid.create`: Creates Mermaid diagram components in documents with theme support
+**当前工具状态**：
+- **自定义工具**（积极开发中）：
+  - `docx.block.tree`：递归获取完整的文档块树结构，支持索引标记和层级信息
+  - `docx.addons.mermaid.create`：在文档中创建 Mermaid 图表组件，支持主题设置
   
-- **Legacy Tools** (based on official library, being phased out):
-  - Document operations: search and import cloud documents
-  - Message sending: batch send messages, create app feed cards
-  - Task management: create tasks, comments, tasklists
-  - AI capabilities: optical character recognition
-  - Feishu dictionary: get repository lists, entity management
-  - Helpdesk features: send ticket messages
+- **遗留工具**（基于官方库，正在淘汰）：
+  - 文档操作：搜索、导入云文档
+  - 消息发送：批量发送消息、创建应用消息流卡片
+  - 任务管理：创建任务、评论、清单
+  - AI 能力：光学字符识别
+  - 飞书词典：获取词库列表、词条管理
+  - 服务台功能：工单消息发送
 
-All tools use User Access Tokens for authentication, ensuring secure access to Feishu APIs. The custom tools provide enhanced functionality with better error handling and performance optimization.
+所有工具都使用用户访问令牌（User Access Token）进行身份验证，确保安全访问飞书 API。自定义工具提供了增强的功能，具有更好的错误处理和性能优化。
