@@ -5816,8 +5816,9 @@ export const docxMarkdownImport = {
       const { userAccessToken } = options || {}
 
       // 处理 markdown 内容，为 mermaid 代码块添加标记
-      const processedMarkdown = addMermaidBlockMarkers(params.markdown)
-
+      let processedMarkdown = addMermaidBlockMarkers(params.markdown)
+      // 去除markdown 内容开头的一级标题
+      processedMarkdown = processedMarkdown.replace(/^# /, '')
       // 构造 FormData
       const formData = new FormData()
       // 生成随机文件名
@@ -5853,7 +5854,7 @@ export const docxMarkdownImport = {
 
       const importData = {
         file_extension: 'md',
-        file_name: file_name,
+        file_name: file_name.replace('.md', ''),
         file_token: response?.file_token,
         type: 'docx',
         point: {
