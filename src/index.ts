@@ -42,7 +42,7 @@ export class MyMCP extends McpAgent<Props, Env> {
     // }))
 
     // Use the upstream access token to facilitate tools
-    this.server.tool('userInfoFeishu', 'Get user info from Feishu', {}, async () => {
+    this.server.tool('user_info', 'Get user info from Feishu', {}, async () => {
       const response = await fetch('https://open.feishu.cn/open-apis/authen/v1/user_info', {
         headers: {
           Authorization: `Bearer ${this.props.accessToken}`,
@@ -108,20 +108,20 @@ export class MyMCP extends McpAgent<Props, Env> {
     )
 
     // 新增：创建文本绘图文档小组件块工具
-    this.server.tool(docxAddonsMermaidCreate.name, docxAddonsMermaidCreate.description, docxAddonsMermaidCreate.schema, async (params) => {
-      try {
-        return await docxAddonsMermaidCreate.customHandler(client, params, {
-          userAccessToken: this.props.accessToken,
-          tool: docxAddonsMermaidCreate,
-        })
-      } catch (error) {
-        console.error('文本绘图工具执行失败:', error)
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `创建文本绘图块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        }
-      }
-    })
+    // this.server.tool(docxAddonsMermaidCreate.name, docxAddonsMermaidCreate.description, docxAddonsMermaidCreate.schema, async (params) => {
+    //   try {
+    //     return await docxAddonsMermaidCreate.customHandler(client, params, {
+    //       userAccessToken: this.props.accessToken,
+    //       tool: docxAddonsMermaidCreate,
+    //     })
+    //   } catch (error) {
+    //     console.error('文本绘图工具执行失败:', error)
+    //     return {
+    //       isError: true,
+    //       content: [{ type: 'text', text: `创建文本绘图块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+    //     }
+    //   }
+    // })
 
     this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.schema, async (params) => {
       try {
