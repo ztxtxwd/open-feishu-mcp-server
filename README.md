@@ -124,11 +124,21 @@ COOKIE_ENCRYPTION_KEY=any_random_string_here
 
 当使用 Claude 连接到您的远程 MCP 服务器时，您可能会看到一些错误消息。这是因为 Claude Desktop 尚不完全支持远程 MCP 服务器，所以有时会出现混淆。要验证 MCP 服务器是否已连接，请将鼠标悬停在 Claude 界面右下角的 🔨 图标上。您应该会看到您的工具在那里可用。
 
-#### 使用 Cursor 和其他 MCP 客户端
+#### 使用 Cursor 
 
-要将 Cursor 与您的 MCP 服务器连接，选择 `Type`："Command"，在 `Command` 字段中，将命令和参数字段合并为一个（例如 `npx mcp-remote https://<your-worker-name>.<your-subdomain>.workers.dev/sse`）。
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=feishu&config=eyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0Ojg3ODgvc3NlIn0%3D)
 
-您可以通过打开客户端的配置文件，添加与 Claude 设置相同的 JSON，并重启 MCP 客户端，将 MCP 服务器连接到其他 MCP 客户端，如 Windsurf。
+或者使用下面的配置：
+
+```
+{
+  "mcpServers": {
+    "feishu": {
+      "url": "http://localhost:8788/sse"
+    }
+  }
+}
+```
 
 ## 工作原理
 
@@ -156,18 +166,5 @@ MCP Remote 库使您的服务器能够公开可由 MCP 客户端（如 Inspector
 #### 飞书 MCP 工具
 
 **发展方向**：本项目正在逐步从使用飞书官方 MCP 库过渡到实现自定义工具，以获得更好的控制和性能。我们正在淘汰官方库，转而使用自主开发的工具。
-
-**当前工具状态**：
-- **自定义工具**（积极开发中）：
-  - `docx.block.tree`：递归获取完整的文档块树结构，支持索引标记和层级信息
-  - `docx.addons.mermaid.create`：在文档中创建 Mermaid 图表组件，支持主题设置
-  
-- **遗留工具**（基于官方库，正在淘汰）：
-  - 文档操作：搜索、导入云文档
-  - 消息发送：批量发送消息、创建应用消息流卡片
-  - 任务管理：创建任务、评论、清单
-  - AI 能力：光学字符识别
-  - 飞书词典：获取词库列表、词条管理
-  - 服务台功能：工单消息发送
 
 所有工具都使用用户访问令牌（User Access Token）进行身份验证，确保安全访问飞书 API。自定义工具提供了增强的功能，具有更好的错误处理和性能优化。
