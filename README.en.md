@@ -30,15 +30,15 @@ You can deploy it to your own Cloudflare account, and after creating your own Fe
 
 While Feishu officially released an MCP Server, this project has significant advantages in the following areas:
 
-### 1. 🎯 Zero-Configuration Experience
+### 🎯 Zero-Configuration Experience
 - **This Project**: Users need no manual configuration, uses `user_access_token` throughout with automatic refresh on expiration
 - **Official Project**: Requires users to manually configure multiple parameters with complex setup
 
-### 2. 🚀 Ultimate Usability Optimization
+### 🚀 Ultimate Usability Optimization
 - **This Project**: Deep optimization of tool size and structure, especially for complex features like document block creation and nested block creation tools, ensuring proper functionality in Cursor and other clients
 - **Official Project**: Simple API-to-MCP tool conversion, with some tools being too large and having usability issues in practice
 
-### 3. 🌐 Cutting-Edge Infrastructure
+### 🌐 Cutting-Edge Infrastructure
 - Supports deployment on Cloudflare Workers, enjoying the industry's most advanced edge computing infrastructure
 
 ## ✨ Features
