@@ -5423,7 +5423,7 @@ export const docxV1BlockTypeSchemaGet = {
                           )
                           .describe('时间轴项目列表'),
                         mode: z
-                          .enum(['horizontal_alternating', 'vertical_alternating', 'vertical', 'horizontal'])
+                          .enum(['horizontal_alternating', 'vertical_alternating', 'vertical_right', 'horizontal_top'])
                           .describe('显示模式 (可选，默认horizontal_alternating)')
                           .optional(),
                         content_show: z
@@ -5848,7 +5848,7 @@ export const docxMarkdownImport = {
       if (!response?.file_token) {
         return {
           isError: true,
-          content: [{ type: 'text' as const, text: '导入文档失败，请检查markdown文件内容' }],
+          content: [{ type: 'text' as const, text: '导入文档失败，请检查markdown文件内容'+JSON.stringify(result) }],
         }
       }
 

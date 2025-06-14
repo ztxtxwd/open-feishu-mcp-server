@@ -37,9 +37,9 @@ export class MyMCP extends McpAgent<Props, Env> {
 
   async init() {
     // Hello, world!
-    this.server.tool('add', 'Add two numbers the way only MCP can', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
-      content: [{ type: 'text', text: String(a + b) }],
-    }))
+    // this.server.tool('add', 'Add two numbers the way only MCP can', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
+    //   content: [{ type: 'text', text: String(a + b) }],
+    // }))
 
     // Use the upstream access token to facilitate tools
     this.server.tool('userInfoFeishu', 'Get user info from Feishu', {}, async () => {
@@ -72,21 +72,21 @@ export class MyMCP extends McpAgent<Props, Env> {
       }
     })
 
-    for (const tool of BuiltinTools) {
-      if (tool) {
-        this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
-          try {
-            const handler = tool.customHandler || larkOapiHandler
-            return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
-          } catch (error) {
-            return {
-              isError: true,
-              content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
-            }
-          }
-        })
-      }
-    }
+    // for (const tool of BuiltinTools) {
+    //   if (tool) {
+    //     this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
+    //       try {
+    //         const handler = tool.customHandler || larkOapiHandler
+    //         return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
+    //       } catch (error) {
+    //         return {
+    //           isError: true,
+    //           content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
+    //         }
+    //       }
+    //     })
+    //   }
+    // }
     // const tool = GenTools.find((tool) => tool.name === 'drive.v1.fileComment.list')
     // for (const tool of [...GenTools]) {
     //   if (tool && (tool.name.startsWith('drive.v12.') || tool.name.startsWith('docx.v1.document'))) {
