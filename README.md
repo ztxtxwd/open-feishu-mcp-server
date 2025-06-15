@@ -148,7 +148,7 @@ wrangler dev
 使用官方的 MCP Inspector 测试您的服务器：
 
 ```bash
-npx @modelcontextprotocol/inspector@0.14.0
+npx @modelcontextprotocol/inspector@latest
 ```
 
 **连接地址**：
