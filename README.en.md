@@ -148,7 +148,7 @@ Server will run at `http://localhost:8788`.
 Test your server using the official MCP Inspector:
 
 ```bash
-npx @modelcontextprotocol/inspector@0.14.0
+npx @modelcontextprotocol/inspector@latest
 ```
 
 **Connection URLs**:
