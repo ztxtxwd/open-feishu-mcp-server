@@ -1,5 +1,6 @@
 import { Client } from '@larksuiteoapi/node-sdk';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
 import { LarkMcpToolOptions, McpTool, ToolNameCase, TokenMode } from './types';
 import { AllTools, AllToolsZh } from './tools';
 import { filterTools } from './utils/filter-tools';
@@ -80,7 +81,7 @@ export class LarkMcpTool {
             };
           }
           const handler = tool.customHandler || larkOapiHandler;
-          if (this.tokenMode == TokenMode.USER_ACCESS_TOKEN && !this.userAccessToken) {
+          if (this.tokenMode === TokenMode.USER_ACCESS_TOKEN && !this.userAccessToken) {
             return {
               isError: true,
               content: [{ type: 'text' as const, text: 'Invalid UserAccessToken' }],

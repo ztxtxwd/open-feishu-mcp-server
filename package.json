@@ -2,12 +2,16 @@
   "name": "remote-mcp-github-oauth",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
     "cf-typegen": "wrangler types",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "lint:check": "eslint src/**/*.{ts,tsx} --max-warnings 0"
   },
   "dependencies": {
     "@larksuiteoapi/node-sdk": "^1.48.0",
@@ -17,10 +21,20 @@
   },
   "devDependencies": {
     "@cloudflare/workers-oauth-provider": "^0.0.5",
+    "@eslint/js": "^9.29.0",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.30",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
     "agents": "^0.0.95",
+    "eslint": "^9.29.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "hono": "^4.7.11",
     "jest": "^29.7.0",
     "just-pick": "^4.2.0",

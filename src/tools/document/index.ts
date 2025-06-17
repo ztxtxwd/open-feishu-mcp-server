@@ -1,14 +1,15 @@
-import z from 'zod'
-import { Client } from '@larksuiteoapi/node-sdk'
-import * as lark from '@larksuiteoapi/node-sdk'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { FEISHU_CONSTANTS } from '../../config/feishu-constants'
-import { addMermaidBlockMarkers } from '../../utils/markdown-processor'
+import z from 'zod';
+import { Client } from '@larksuiteoapi/node-sdk';
+import * as lark from '@larksuiteoapi/node-sdk';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+
+import { FEISHU_CONSTANTS } from '../../config/feishu-constants';
+import { addMermaidBlockMarkers } from '../../utils/markdown-processor';
 
 // 保持原有的简单Schema
 const EnhancedBlockListSchema = z.object({
   document_id: z.string().describe('文档ID'),
-})
+});
 
 // 定义清晰的类型接口
 interface EnhancedBlock {
@@ -34,7 +35,7 @@ export const blockTreeTool = {
   customHandler: async (client: Client, params: z.infer<typeof EnhancedBlockListSchema>, options: any) => {
     try {
       // 收集所有块
-      const allBlocks: any[] = []
+      const allBlocks: any[] = [];
 
       const iterator = await client.docx.v1.documentBlock.listWithIterator(
         {
@@ -47,22 +48,22 @@ export const blockTreeTool = {
           },
         },
         lark.withUserAccessToken(options.userAccessToken),
-      )
+      );
 
       for await (const item of iterator) {
         if (item?.items) {
-          allBlocks.push(...item.items)
+          allBlocks.push(...item.items);
         }
       }
 
       // 优化算法：先建立父子关系映射，再构建树
-      const blockMap = new Map<string, EnhancedBlock>()
-      const childrenMap = new Map<string, EnhancedBlock[]>()
-      let rootBlock: EnhancedBlock | null = null
+      const blockMap = new Map<string, EnhancedBlock>();
+      const childrenMap = new Map<string, EnhancedBlock[]>();
+      let rootBlock: EnhancedBlock | null = null;
 
       // 第一步：创建所有块并建立映射
       for (const block of allBlocks) {
-        if (!block?.block_id) continue
+        if (!block?.block_id) {continue;}
 
         const enhancedBlock: EnhancedBlock = {
           ...block,
@@ -72,37 +73,37 @@ export const blockTreeTool = {
           children: [],
           index: 0,
           depth: 0,
-        }
+        };
 
-        blockMap.set(enhancedBlock.block_id, enhancedBlock)
+        blockMap.set(enhancedBlock.block_id, enhancedBlock);
 
         // 建立父子关系映射
         if (enhancedBlock.parent_id) {
           if (!childrenMap.has(enhancedBlock.parent_id)) {
-            childrenMap.set(enhancedBlock.parent_id, [])
+            childrenMap.set(enhancedBlock.parent_id, []);
           }
-          childrenMap.get(enhancedBlock.parent_id)!.push(enhancedBlock)
+          childrenMap.get(enhancedBlock.parent_id)!.push(enhancedBlock);
         } else {
           // 根节点
-          rootBlock = enhancedBlock
+          rootBlock = enhancedBlock;
         }
       }
 
       // 第二步：使用BFS算法构建树结构和设置索引/深度
       if (rootBlock) {
-        const queue: Array<{ block: EnhancedBlock; depth: number }> = [{ block: rootBlock, depth: 0 }]
+        const queue: Array<{ block: EnhancedBlock; depth: number }> = [{ block: rootBlock, depth: 0 }];
 
         while (queue.length > 0) {
-          const { block, depth } = queue.shift()!
-          block.depth = depth
+          const { block, depth } = queue.shift()!;
+          block.depth = depth;
 
           // 获取子块并设置索引
-          const children = childrenMap.get(block.block_id) || []
+          const children = childrenMap.get(block.block_id) || [];
           children.forEach((child, index) => {
-            child.index = index
-            block.children.push(child)
-            queue.push({ block: child, depth: depth + 1 })
-          })
+            child.index = index;
+            block.children.push(child);
+            queue.push({ block: child, depth: depth + 1 });
+          });
         }
       }
 
@@ -113,9 +114,9 @@ export const blockTreeTool = {
             text: JSON.stringify(rootBlock || {}),
           },
         ],
-      }
+      };
     } catch (error) {
-      console.error('blockTreeTool 执行失败:', error)
+      console.error('blockTreeTool 执行失败:', error);
 
       return {
         isError: true,
@@ -129,10 +130,10 @@ export const blockTreeTool = {
             }),
           },
         ],
-      }
+      };
     }
   },
-}
+};
 
 export const docxBlockPatch = {
   project: 'docx',
@@ -221,7 +222,7 @@ export const docxBlockPatch = {
   },
   customHandler: async (client: Client, params: any, options: any) => {
     try {
-      const result = await client.docx.v1.documentBlock.patch(params, lark.withUserAccessToken(options.userAccessToken))
+      const result = await client.docx.v1.documentBlock.patch(params, lark.withUserAccessToken(options.userAccessToken));
       return {
         content: [
           {
@@ -229,16 +230,16 @@ export const docxBlockPatch = {
             text: JSON.stringify(result.data),
           },
         ],
-      }
+      };
     } catch (error) {
-      console.error('docxBlockPatch 工具执行失败:', error)
+      console.error('docxBlockPatch 工具执行失败:', error);
       return {
         isError: true,
         content: [{ type: 'text', text: `docxBlockPatch 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-      }
+      };
     }
   },
-}
+};
 
 export const docxV1BlockTypeSchemaGet = {
   project: 'docx',
@@ -287,7 +288,7 @@ export const docxV1BlockTypeSchemaGet = {
       ])
       .describe('块类型'),
   },
-  customHandler: async (client: Client, params: any, options: any) => {
+  customHandler: async (params: any) => {
     switch (params.block_type) {
       case '文本':
         return {
@@ -563,7 +564,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '一级标题':
         return {
           content: [
@@ -838,7 +839,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '二级标题':
         return {
           content: [
@@ -1113,7 +1114,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '三级标题':
         return {
           content: [
@@ -1388,7 +1389,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '四级标题':
         return {
           content: [
@@ -1663,7 +1664,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '五级标题':
         return {
           content: [
@@ -1938,7 +1939,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '六级标题':
         return {
           content: [
@@ -2213,7 +2214,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '七级标题':
         return {
           content: [
@@ -2488,7 +2489,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '八级标题':
         return {
           content: [
@@ -2763,7 +2764,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '九级标题':
         return {
           content: [
@@ -3038,7 +3039,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '无序列表':
         return {
           content: [
@@ -3313,7 +3314,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '有序列表':
         return {
           content: [
@@ -3588,7 +3589,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '代码块':
         return {
           content: [
@@ -3631,7 +3632,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '引用':
         return {
           content: [
@@ -3906,7 +3907,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '公式':
         return {
           content: [
@@ -3939,7 +3940,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '待办事项':
         return {
           content: [
@@ -4242,7 +4243,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '高亮块':
         return {
           content: [
@@ -5226,7 +5227,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '群聊卡片':
         return {
           content: [
@@ -5247,7 +5248,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '分割线':
         return {
           content: [
@@ -5263,7 +5264,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '分栏':
         return {
           content: [
@@ -5283,7 +5284,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '内嵌网页':
         return {
           content: [
@@ -5313,7 +5314,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '表格':
         return {
           content: [
@@ -5349,7 +5350,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '文本绘图':
         return {
           content: [
@@ -5370,7 +5371,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '名词解释':
         return {
           content: [
@@ -5401,7 +5402,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '时间轴':
         return {
           content: [
@@ -5441,7 +5442,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '目录导航':
         return {
           content: [
@@ -5464,7 +5465,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '信息收集':
         return {
           content: [
@@ -5493,7 +5494,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '日期提醒':
         return {
           content: [
@@ -5525,7 +5526,7 @@ export const docxV1BlockTypeSchemaGet = {
               text: '当前时间戳：' + Date.now() + '，当前时间：' + new Date().toLocaleString(),
             },
           ],
-        }
+        };
       case '倒计时':
         return {
           content: [
@@ -5549,7 +5550,7 @@ export const docxV1BlockTypeSchemaGet = {
               text: '当前时间戳：' + Date.now() + '，当前时间：' + new Date().toLocaleString(),
             },
           ],
-        }
+        };
       case '图片':
         return {
           content: [
@@ -5569,7 +5570,7 @@ export const docxV1BlockTypeSchemaGet = {
               ),
             },
           ],
-        }
+        };
       case '视频':
       case '附件':
       case '文件':
@@ -5593,7 +5594,7 @@ export const docxV1BlockTypeSchemaGet = {
               text: '不要受别的信息干扰，直接创建文件块就好',
             },
           ],
-        }
+        };
       default:
         return {
           content: [
@@ -5602,10 +5603,10 @@ export const docxV1BlockTypeSchemaGet = {
               text: `不支持的块类型: ${params.block_type}`,
             },
           ],
-        }
+        };
     }
   },
-}
+};
 
 export const docxV1DocumentBlockChildrenCreateSimple = {
   project: 'docx',
@@ -5629,24 +5630,24 @@ export const docxV1DocumentBlockChildrenCreateSimple = {
   customHandler: async (client: Client, params: any, options: any) => {
     try {
       if (params.data.children[0].block_type === 40 && params.data.children[0].mermaid_drawing) {
-        params = get补全后的文本绘图块参数(params)
+        params = get补全后的文本绘图块参数(params);
       } else if (params.data.children[0].block_type === 40 && params.data.children[0].glossary) {
-        params = get补全后的名词解释块参数(params)
+        params = get补全后的名词解释块参数(params);
       } else if (params.data.children[0].block_type === 40 && params.data.children[0].timeline) {
-        params = get补全后的时间轴块参数(params)
+        params = get补全后的时间轴块参数(params);
       } else if (params.data.children[0].block_type === 40 && params.data.children[0].catalog_navigation) {
-        params = get补全后的目录导航块参数(params)
+        params = get补全后的目录导航块参数(params);
       } else if (params.data.children[0].block_type === 40 && params.data.children[0].information_collection) {
-        params = get补全后的信息收集块参数(params)
+        params = get补全后的信息收集块参数(params);
       } else if (params.data.children[0].block_type === 40 && params.data.children[0].countdown) {
-        params = get补全后的倒计时块参数(params)
+        params = get补全后的倒计时块参数(params);
       } else if (params.data.children[0].block_type === 23) {
-        params = get补全后的附件块参数(params)
+        params = get补全后的附件块参数(params);
       }
-      const response = await client.docx.v1.documentBlockChildren.create(params, lark.withUserAccessToken(options.userAccessToken))
+      const response = await client.docx.v1.documentBlockChildren.create(params, lark.withUserAccessToken(options.userAccessToken));
       switch (params.data.children[0].block_type) {
         case 27:
-          const imageBlockId = response.data?.children?.[0]?.block_id
+          const imageBlockId = response.data?.children?.[0]?.block_id;
           return {
             content: [
               {
@@ -5654,9 +5655,9 @@ export const docxV1DocumentBlockChildrenCreateSimple = {
                 text: `图片块创建成功，接下来使用Image BlockID ${imageBlockId} 作为 parent_node 上传图片，上传完成后修改图片块`,
               },
             ],
-          }
+          };
         case 23:
-          const fileBlockId = response.data?.children?.[0]?.children?.[0]
+          const fileBlockId = response.data?.children?.[0]?.children?.[0];
           return {
             content: [
               {
@@ -5664,7 +5665,7 @@ export const docxV1DocumentBlockChildrenCreateSimple = {
                 text: `文件块创建成功，接下来使用File BlockID ${fileBlockId} 作为 parent_node 上传文件，上传完成后修改文件块`,
               },
             ],
-          }
+          };
         default:
           return {
             content: [
@@ -5673,10 +5674,10 @@ export const docxV1DocumentBlockChildrenCreateSimple = {
                 text: JSON.stringify(response),
               },
             ],
-          }
+          };
       }
     } catch (error) {
-      console.error('docxV1DocumentBlockChildrenCreateSimple 工具执行失败:', error)
+      console.error('docxV1DocumentBlockChildrenCreateSimple 工具执行失败:', error);
       return {
         isError: true,
         content: [
@@ -5685,10 +5686,10 @@ export const docxV1DocumentBlockChildrenCreateSimple = {
             text: `docxV1DocumentBlockChildrenCreateSimple 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}`,
           },
         ],
-      }
+      };
     }
   },
-}
+};
 
 export const docxV1DocumentTableCreate = {
   project: 'docx',
@@ -5712,7 +5713,7 @@ export const docxV1DocumentTableCreate = {
   },
   customHandler: async (client: Client, params: any, options: any) => {
     try {
-      const response = await client.docx.v1.documentBlockDescendant.create(params, lark.withUserAccessToken(options.userAccessToken))
+      const response = await client.docx.v1.documentBlockDescendant.create(params, lark.withUserAccessToken(options.userAccessToken));
       return {
         content: [
           {
@@ -5720,16 +5721,16 @@ export const docxV1DocumentTableCreate = {
             text: JSON.stringify(response),
           },
         ],
-      }
+      };
     } catch (error) {
-      console.error('docxV1DocumentTableCreate 工具执行失败:', error)
+      console.error('docxV1DocumentTableCreate 工具执行失败:', error);
       return {
         isError: true,
         content: [{ type: 'text', text: `docxV1DocumentTableCreate 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-      }
+      };
     }
   },
-}
+};
 
 export const docxImageOrVideoOrFileCreate = {
   project: 'docx',
@@ -5766,7 +5767,7 @@ export const docxImageOrVideoOrFileCreate = {
               },
               { type: 'text', text: '请严格按照以下顺序调用Tools：1. docx_block_create 2. drive_media_upload 3. docx_block_patch。' },
             ],
-          }
+          };
         case 'video':
         case 'file':
           return {
@@ -5785,22 +5786,22 @@ export const docxImageOrVideoOrFileCreate = {
                 ),
               },
               { type: 'text', text: '请严格按照以下顺序调用Tools：1. docx_block_create 2. drive_media_upload 3. docx_block_patch' }],
-          }
+          };
         default:
           return {
             isError: true,
             content: [{ type: 'text', text: `插入图片、视频或文件失败，请检查参数` }],
-          }
+          };
       }
     } catch (error) {
-      console.error('docxFileInsert 工具执行失败:', error)
+      console.error('docxFileInsert 工具执行失败:', error);
       return {
         isError: true,
         content: [{ type: 'text', text: `插入文件或视频失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-      }
+      };
     }
   },
-}
+};
 
 export const docxMarkdownImport = {
   project: 'docx',
@@ -5813,22 +5814,22 @@ export const docxMarkdownImport = {
   },
   customHandler: async (client:Client, params:any, options:any) => {
     try {
-      const { userAccessToken } = options || {}
+      const { userAccessToken } = options || {};
 
       // 处理 markdown 内容，为 mermaid 代码块添加标记
-      let processedMarkdown = addMermaidBlockMarkers(params.markdown)
+      let processedMarkdown = addMermaidBlockMarkers(params.markdown);
       // 去除markdown 内容开头的一级标题
-      processedMarkdown = processedMarkdown.replace(/^# /, '')
+      processedMarkdown = processedMarkdown.replace(/^# /, '');
       // 构造 FormData
-      const formData = new FormData()
+      const formData = new FormData();
       // 生成随机文件名
-      const file_name = (params.file_name || Math.random().toString(36).substring(2, 15)) + '.md'
-      formData.append('file_name', file_name)
-      formData.append('parent_type', 'ccm_import_open')
-      formData.append('parent_node', '/')
-      formData.append('size', Buffer.byteLength(processedMarkdown).toString())
-      formData.append('file', new File([processedMarkdown], file_name))
-      formData.append('extra', JSON.stringify({ obj_type: 'docx', file_extension: 'md' }))
+      const file_name = (params.file_name || Math.random().toString(36).substring(2, 15)) + '.md';
+      formData.append('file_name', file_name);
+      formData.append('parent_type', 'ccm_import_open');
+      formData.append('parent_node', '/');
+      formData.append('size', Buffer.byteLength(processedMarkdown).toString());
+      formData.append('file', new File([processedMarkdown], file_name));
+      formData.append('extra', JSON.stringify({ obj_type: 'docx', file_extension: 'md' }));
 
       // 发起 POST 请求
       const resp = await fetch('https://open.feishu.cn/open-apis/drive/v1/medias/upload_all', {
@@ -5838,18 +5839,18 @@ export const docxMarkdownImport = {
           // Content-Type 不需手动设置，fetch 会自动添加 multipart 边界
         },
         body: formData,
-      })
-      const result = await resp.json() as any
+      });
+      const result = await resp.json() as any;
       // const response =
       //   userAccessToken && params.useUAT
       //     ? await client.drive.media.uploadAll({ data }, lark.withUserAccessToken(userAccessToken))
       //     : await client.drive.media.uploadAll({ data })
-      const response = result.data
+      const response = result.data;
       if (!response?.file_token) {
         return {
           isError: true,
           content: [{ type: 'text' as const, text: '导入文档失败，请检查markdown文件内容'+JSON.stringify(result) }],
-        }
+        };
       }
 
       const importData = {
@@ -5861,22 +5862,22 @@ export const docxMarkdownImport = {
           mount_type: 1,
           mount_key: '',
         },
-      }
+      };
 
       const importResponse =
-        await client.drive.importTask.create({ data: importData }, lark.withUserAccessToken(userAccessToken))
+        await client.drive.importTask.create({ data: importData }, lark.withUserAccessToken(userAccessToken));
 
-      const taskId = importResponse.data?.ticket
+      const taskId = importResponse.data?.ticket;
       if (!taskId) {
         return {
           isError: true,
           content: [{ type: 'text' as const, text: '导入文档失败，请检查markdown文件内容' }],
-        }
+        };
       }
 
       for (let i = 0; i < 5; i++) {
         const taskResponse =
-          await client.drive.importTask.get({ path: { ticket: taskId } }, lark.withUserAccessToken(userAccessToken))
+          await client.drive.importTask.get({ path: { ticket: taskId } }, lark.withUserAccessToken(userAccessToken));
 
         if (taskResponse.data?.result?.job_status === 0) {
           return {
@@ -5886,13 +5887,13 @@ export const docxMarkdownImport = {
                 text: `导入文档请求成功: ${JSON.stringify(taskResponse.data ?? taskResponse)}`,
               },
             ],
-          }
+          };
         } else if (taskResponse.data?.result?.job_status !== 1 && taskResponse.data?.result?.job_status !== 2) {
           return {
             content: [{ type: 'text' as const, text: '导入文档失败，请稍后再试' + JSON.stringify(taskResponse.data) }],
-          }
+          };
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       return {
@@ -5902,7 +5903,7 @@ export const docxMarkdownImport = {
             text: '导入文档失败，请稍后再试',
           },
         ],
-      }
+      };
     } catch (error) {
       return {
         isError: true,
@@ -5912,10 +5913,10 @@ export const docxMarkdownImport = {
             text: `导入文档请求失败: ${JSON.stringify((error as any)?.response?.data || error)}`,
           },
         ],
-      }
+      };
     }
   },
-}
+};
 
 export const docxBlockBatchDelete = {
   project: 'docx',
@@ -5941,7 +5942,7 @@ export const docxBlockBatchDelete = {
   },
   customHandler: async (client:Client, params:any, options:any) => {
     try {
-      const response = await client.docx.v1.documentBlockChildren.batchDelete(params, lark.withUserAccessToken(options.userAccessToken))
+      const response = await client.docx.v1.documentBlockChildren.batchDelete(params, lark.withUserAccessToken(options.userAccessToken));
       return {
         content: [
           {
@@ -5949,34 +5950,34 @@ export const docxBlockBatchDelete = {
             text: JSON.stringify(response),
           },
         ],
-      }
+      };
     } catch (error) {
-      console.error('docxBlockBatchDelete 工具执行失败:', error)
+      console.error('docxBlockBatchDelete 工具执行失败:', error);
       return {
         isError: true,
         content: [{ type: 'text', text: `docxBlockBatchDelete 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-      }
+      };
     }
   },
-}
+};
 
 function get补全后的文本绘图块参数(params: any) {
   // 使用配置常量
-  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS
-  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.MERMAID_DRAWING
+  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS;
+  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.MERMAID_DRAWING;
 
-  const theme = params.data.children[0].mermaid_drawing.theme || FEISHU_CONSTANTS.THEMES.DEFAULT
+  const theme = params.data.children[0].mermaid_drawing.theme || FEISHU_CONSTANTS.THEMES.DEFAULT;
   const record = JSON.stringify({
     data: params.data.children[0].mermaid_drawing.drawing_data,
     theme,
     view: 'chart',
-  })
+  });
 
-  const blockId = params.path.block_id || params.path.document_id
+  const blockId = params.path.block_id || params.path.document_id;
   const path = {
     document_id: params.path.document_id,
     block_id: blockId,
-  }
+  };
   const data = {
     children: [
       {
@@ -5988,18 +5989,18 @@ function get补全后的文本绘图块参数(params: any) {
       },
     ],
     index: params.data.index,
-  }
+  };
   return {
     params: {},
     data,
     path,
-  }
+  };
 }
 
 function get补全后的名词解释块参数(params: any) {
   // 使用配置常量
-  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS
-  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.GLOSSARY
+  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS;
+  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.GLOSSARY;
 
   // 构建名词解释的数据结构，参考您提供的示例数据
   const setting = {
@@ -6019,28 +6020,28 @@ function get补全后的名词解释块参数(params: any) {
       },
     ],
     mode: 'glossary',
-  }
+  };
 
   // 转换术语列表格式
-  const list = params.data.children[0].glossary.terms.map((term: any, index: number) => ({
+  const list = params.data.children[0].glossary.terms.map((term: any) => ({
     name: term.name,
     alias: term.alias || '',
     desc: term.desc,
     docs: term.docs || [],
     images: term.images || [],
     links: term.links || [],
-  }))
+  }));
 
   const record = JSON.stringify({
     setting,
     list,
-  })
+  });
 
-  const blockId = params.path.block_id || params.path.document_id
+  const blockId = params.path.block_id || params.path.document_id;
   const path = {
     document_id: params.path.document_id,
     block_id: blockId,
-  }
+  };
   const data = {
     children: [
       {
@@ -6052,21 +6053,21 @@ function get补全后的名词解释块参数(params: any) {
       },
     ],
     index: params.data.index,
-  }
+  };
   return {
     params: {},
     data,
     path,
-  }
+  };
 }
 
 function get补全后的时间轴块参数(params: any) {
   // 使用配置常量
-  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS
-  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.TIMELINE
+  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS;
+  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.TIMELINE;
 
   // 构建时间轴的数据结构，参考您提供的示例数据
-  const blockId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  const blockId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   // 默认内容显示配置
   const contentShow = {
@@ -6074,7 +6075,7 @@ function get补全后的时间轴块参数(params: any) {
     time: true,
     title: true,
     ...params.data.children[0].timeline.content_show,
-  }
+  };
 
   // 转换时间轴项目格式
   const items = params.data.children[0].timeline.items.map((item: any) => ({
@@ -6082,22 +6083,22 @@ function get补全后的时间轴块参数(params: any) {
     title: item.title,
     time: item.time,
     text: item.text,
-  }))
+  }));
 
-  const mode = params.data.children[0].timeline.mode || 'horizontal_alternating'
+  const mode = params.data.children[0].timeline.mode || 'horizontal_alternating';
 
   const record = JSON.stringify({
     blockId,
     contentShow,
     items,
     mode,
-  })
+  });
 
-  const parentBlockId = params.path.block_id || params.path.document_id
+  const parentBlockId = params.path.block_id || params.path.document_id;
   const path = {
     document_id: params.path.document_id,
     block_id: parentBlockId,
-  }
+  };
   const data = {
     children: [
       {
@@ -6109,40 +6110,40 @@ function get补全后的时间轴块参数(params: any) {
       },
     ],
     index: params.data.index,
-  }
+  };
   return {
     params: {},
     data,
     path,
-  }
+  };
 }
 
 function get补全后的目录导航块参数(params: any) {
   // 使用配置常量
-  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS
-  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.CATALOG_NAVIGATION
+  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS;
+  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.CATALOG_NAVIGATION;
 
   // 构建目录导航的数据结构，参考您提供的示例数据
-  const catalogNav = params.data.children[0].catalog_navigation
+  const catalogNav = params.data.children[0].catalog_navigation;
 
   // 设置默认配置
-  const ignoreCataLogRecordIds = catalogNav.ignore_catalog_record_ids || []
-  const isShowAllLevel = catalogNav.is_show_all_level !== undefined ? catalogNav.is_show_all_level : true
-  const showCataLogLevel = catalogNav.show_catalog_level || 3
-  const viewType = catalogNav.view_type || 'normal'
+  const ignoreCataLogRecordIds = catalogNav.ignore_catalog_record_ids || [];
+  const isShowAllLevel = catalogNav.is_show_all_level !== undefined ? catalogNav.is_show_all_level : true;
+  const showCataLogLevel = catalogNav.show_catalog_level || 3;
+  const viewType = catalogNav.view_type || 'normal';
 
   const record = JSON.stringify({
     ignoreCataLogRecordIds,
     isShowAllLevel,
     showCataLogLevel,
     viewType,
-  })
+  });
 
-  const parentBlockId = params.path.block_id || params.path.document_id
+  const parentBlockId = params.path.block_id || params.path.document_id;
   const path = {
     document_id: params.path.document_id,
     block_id: parentBlockId,
-  }
+  };
   const data = {
     children: [
       {
@@ -6154,21 +6155,21 @@ function get补全后的目录导航块参数(params: any) {
       },
     ],
     index: params.data.index,
-  }
+  };
   return {
     params: {},
     data,
     path,
-  }
+  };
 }
 
 function get补全后的信息收集块参数(params: any) {
   // 使用配置常量
-  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS
-  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.INFORMATION_COLLECTION
+  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS;
+  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.INFORMATION_COLLECTION;
 
   // 构建信息收集的数据结构，参考您提供的示例数据
-  const infoCollection = params.data.children[0].information_collection
+  const infoCollection = params.data.children[0].information_collection;
 
   // 设置默认配置，参考示例数据格式
   const config = {
@@ -6178,17 +6179,17 @@ function get补全后的信息收集块参数(params: any) {
     icon: infoCollection.config.icon || 'CHECK',
     readType: infoCollection.config.readType || 1,
     selectVal: infoCollection.config.selectVal || 0,
-  }
+  };
 
   const record = JSON.stringify({
     config,
-  })
+  });
 
-  const parentBlockId = params.path.block_id || params.path.document_id
+  const parentBlockId = params.path.block_id || params.path.document_id;
   const path = {
     document_id: params.path.document_id,
     block_id: parentBlockId,
-  }
+  };
   const data = {
     children: [
       {
@@ -6200,31 +6201,31 @@ function get补全后的信息收集块参数(params: any) {
       },
     ],
     index: params.data.index,
-  }
+  };
   return {
     params: {},
     data,
     path,
-  }
+  };
 }
 
 function get补全后的倒计时块参数(params: any) {
-  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS
-  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.COUNTDOWN
+  const BLOCK_TYPE = FEISHU_CONSTANTS.BLOCK_TYPES.ADDONS;
+  const COMPONENT_TYPE_ID = FEISHU_CONSTANTS.COMPONENT_TYPE_IDS.COUNTDOWN;
 
-  const countdown = params.data.children[0].countdown
+  const countdown = params.data.children[0].countdown;
 
   const record = JSON.stringify({
     color: countdown.color,
     duration: countdown.duration,
     startTime: countdown.startTime,
-  })
+  });
 
-  const parentBlockId = params.path.block_id || params.path.document_id
+  const parentBlockId = params.path.block_id || params.path.document_id;
   const path = {
     document_id: params.path.document_id,
     block_id: parentBlockId,
-  }
+  };
   const data = {
     children: [
       {
@@ -6236,18 +6237,18 @@ function get补全后的倒计时块参数(params: any) {
       },
     ],
     index: params.data.index,
-  }
+  };
   return {
     params: {},
     data,
     path,
-  }
+  };
 }
 
 function get补全后的附件块参数(params: any) {
   const file = {
     token: '',
-  }
-  params.data.children[0].file = file
-  return params
+  };
+  params.data.children[0].file = file;
+  return params;
 }

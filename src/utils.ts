@@ -26,7 +26,7 @@ export function getUpstreamAuthorizeUrl({
 	upstream.searchParams.set("client_id", client_id);
 	upstream.searchParams.set("redirect_uri", redirect_uri);
 	upstream.searchParams.set("scope", scope);
-	if (state) upstream.searchParams.set("state", state);
+	if (state) {upstream.searchParams.set("state", state);}
 	upstream.searchParams.set("response_type", "code");
 	return upstream.href;
 }
@@ -77,7 +77,6 @@ export async function fetchUpstreamAuthToken({
 		});
 
 		if (!resp.ok) {
-			console.log(await resp.text());
 			return [null, new Response("Failed to fetch access token", { status: 500 })];
 		}
 		const data = await resp.json() as {
@@ -101,7 +100,6 @@ export async function fetchUpstreamAuthToken({
 			body: new URLSearchParams({ client_id, client_secret, code, redirect_uri }).toString(),
 		});
 		if (!resp.ok) {
-			console.log(await resp.text());
 			return [null, new Response("Failed to fetch access token", { status: 500 })];
 		}
 		const body = await resp.formData();
@@ -152,7 +150,6 @@ export async function refreshUpstreamAuthToken({
 		});
 
 		if (!resp.ok) {
-			console.log(await resp.text());
 			return [null, new Response("Failed to refresh access token", { status: 500 })];
 		}
 		const data = await resp.json() as {
@@ -184,7 +181,6 @@ export async function refreshUpstreamAuthToken({
 		});
 
 		if (!resp.ok) {	
-			console.log(await resp.text());
 			return [null, new Response("Failed to refresh access token", { status: 500 })];
 		}
 		const body = await resp.formData();

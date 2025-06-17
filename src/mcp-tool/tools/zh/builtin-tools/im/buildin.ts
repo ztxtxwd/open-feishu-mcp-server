@@ -1,5 +1,6 @@
-import { McpTool } from '../../../../types';
 import { z } from 'zod';
+
+import { McpTool } from '../../../../types';
 
 // 工具名称类型
 export type imBuiltinToolName = 'im.builtin.batchSend';
