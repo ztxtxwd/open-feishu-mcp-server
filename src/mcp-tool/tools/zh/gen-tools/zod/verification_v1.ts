@@ -1,4 +1,3 @@
-import { z } from 'zod';
 export type verificationV1ToolName = 'verification.v1.verification.get';
 export const verificationV1VerificationGet = {
   project: 'verification',

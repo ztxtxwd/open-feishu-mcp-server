@@ -77,7 +77,6 @@ export async function fetchUpstreamAuthToken({
 		});
 
 		if (!resp.ok) {
-			console.log(await resp.text());
 			return [null, new Response("Failed to fetch access token", { status: 500 })];
 		}
 		const data = await resp.json() as {
@@ -101,7 +100,6 @@ export async function fetchUpstreamAuthToken({
 			body: new URLSearchParams({ client_id, client_secret, code, redirect_uri }).toString(),
 		});
 		if (!resp.ok) {
-			console.log(await resp.text());
 			return [null, new Response("Failed to fetch access token", { status: 500 })];
 		}
 		const body = await resp.formData();
@@ -152,7 +150,6 @@ export async function refreshUpstreamAuthToken({
 		});
 
 		if (!resp.ok) {
-			console.log(await resp.text());
 			return [null, new Response("Failed to refresh access token", { status: 500 })];
 		}
 		const data = await resp.json() as {
@@ -184,7 +181,6 @@ export async function refreshUpstreamAuthToken({
 		});
 
 		if (!resp.ok) {	
-			console.log(await resp.text());
 			return [null, new Response("Failed to refresh access token", { status: 500 })];
 		}
 		const body = await resp.formData();

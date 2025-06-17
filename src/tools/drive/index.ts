@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import { z } from 'zod';
 
 import { addMermaidBlockMarkers } from '../../utils/markdown-processor';

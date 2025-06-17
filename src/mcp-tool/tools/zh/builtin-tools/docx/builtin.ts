@@ -1,6 +1,3 @@
-import { ReadStream } from 'fs';
-import { Readable } from 'stream';
-
 import * as lark from '@larksuiteoapi/node-sdk';
 import { z } from 'zod';
 

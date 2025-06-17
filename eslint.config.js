@@ -101,7 +101,7 @@ export default [
       ],
       
       // 基础规则
-      'no-console': 'warn',
+      'no-console': 'off',
       'no-debugger': 'error',
       'no-unused-vars': 'off', // 使用 TypeScript 版本
       'prefer-const': 'error',

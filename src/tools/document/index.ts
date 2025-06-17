@@ -288,7 +288,7 @@ export const docxV1BlockTypeSchemaGet = {
       ])
       .describe('块类型'),
   },
-  customHandler: async (client: Client, params: any, options: any) => {
+  customHandler: async (params: any) => {
     switch (params.block_type) {
       case '文本':
         return {
@@ -6023,7 +6023,7 @@ function get补全后的名词解释块参数(params: any) {
   };
 
   // 转换术语列表格式
-  const list = params.data.children[0].glossary.terms.map((term: any, index: number) => ({
+  const list = params.data.children[0].glossary.terms.map((term: any) => ({
     name: term.name,
     alias: term.alias || '',
     desc: term.desc,

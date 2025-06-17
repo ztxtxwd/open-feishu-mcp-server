@@ -1,3 +1,4 @@
+/* eslint-disable */
 // workers-oauth-utils.ts
 
 import type { ClientInfo, AuthRequest } from '@cloudflare/workers-oauth-provider'; // Adjust path if necessary
@@ -12,6 +13,7 @@ const ONE_YEAR_IN_SECONDS = 31536000;
  * @param data - The data to encode (will be stringified).
  * @returns A URL-safe base64 encoded string.
  */
+ 
 function encodeState(data: any): string {
   try {
     const jsonString = JSON.stringify(data);

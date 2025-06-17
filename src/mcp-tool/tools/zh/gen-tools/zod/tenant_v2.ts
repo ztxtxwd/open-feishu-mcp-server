@@ -1,4 +1,3 @@
-import { z } from 'zod';
 export type tenantV2ToolName = 'tenant.v2.tenantProductAssignInfo.query' | 'tenant.v2.tenant.query';
 export const tenantV2TenantProductAssignInfoQuery = {
   project: 'tenant',

@@ -81,7 +81,7 @@ export class LarkMcpTool {
             };
           }
           const handler = tool.customHandler || larkOapiHandler;
-          if (this.tokenMode == TokenMode.USER_ACCESS_TOKEN && !this.userAccessToken) {
+          if (this.tokenMode === TokenMode.USER_ACCESS_TOKEN && !this.userAccessToken) {
             return {
               isError: true,
               content: [{ type: 'text' as const, text: 'Invalid UserAccessToken' }],

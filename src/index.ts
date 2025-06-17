@@ -1,31 +1,16 @@
 import OAuthProvider from '@cloudflare/workers-oauth-provider';
 import { McpAgent } from 'agents/mcp';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
 import { Client } from '@larksuiteoapi/node-sdk';
 import { env } from 'cloudflare:workers';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { FeishuHandler } from './feishu-handler';
 import { Props, refreshUpstreamAuthToken } from './utils';
-import { caseTransf } from './mcp-tool/utils/case-transf';
-import { larkOapiHandler } from './mcp-tool/utils/handler';
-import { getShouldUseUAT } from './mcp-tool/utils/get-should-use-uat';
-import { TokenMode } from './mcp-tool/types';
-import { docxBuiltinToolName, docxBuiltinTools } from './mcp-tool/tools/zh/builtin-tools/docx/builtin';
-import { GenTools } from './mcp-tool/tools/zh/gen-tools';
 import { oapiHttpInstance } from './utils/http-instance';
-import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools';
 import { RecallTool } from './mcp-tool/document-tool/recall';
-import { docxAddonsMermaidCreate } from './tools/document/addons/mermaid';
 import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document';
 import { mediaUploadTool } from './tools/drive';
 
-
-const ALLOWED_USER_IDS = new Set([
-  // Add Feishu user IDs of users who should have access to the image generation tool
-  // For example: 'ou_xxxx', 'ou_yyyy'
-]);
 const client = new Client({
   appId: env.FEISHU_APP_ID,
   appSecret: env.FEISHU_APP_SECRET,
@@ -261,8 +246,7 @@ export default new OAuthProvider({
         client_secret: env.FEISHU_APP_SECRET,
       });
       // console.log('refreshUpstreamAuthToken', refreshToken)
-      if (errResponse) {
-      } else {
+      if (!errResponse){
         return {
           newProps: {
             ...options.props,
