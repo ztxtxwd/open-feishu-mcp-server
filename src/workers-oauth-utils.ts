@@ -441,11 +441,11 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
             
           <div class="card">
             
-            <h2 class="alert"><strong>${clientName || 'A new MCP Client'}</strong> is requesting access</h1>
+            <h2 class="alert"><strong>${clientName || 'A new MCP Client'}</strong> 正在请求访问</h1>
             
             <div class="client-info">
               <div class="client-detail">
-                <div class="detail-label">Name:</div>
+                <div class="detail-label">名称:</div>
                 <div class="detail-value">
                   ${clientName}
                 </div>
@@ -455,7 +455,7 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
                 clientUri
                   ? `
                 <div class="client-detail">
-                  <div class="detail-label">Website:</div>
+                  <div class="detail-label">网站:</div>
                   <div class="detail-value small">
                     <a href="${clientUri}" target="_blank" rel="noopener noreferrer">
                       ${clientUri}
@@ -470,7 +470,7 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
                 policyUri
                   ? `
                 <div class="client-detail">
-                  <div class="detail-label">Privacy Policy:</div>
+                  <div class="detail-label">隐私政策:</div>
                   <div class="detail-value">
                     <a href="${policyUri}" target="_blank" rel="noopener noreferrer">
                       ${policyUri}
@@ -485,7 +485,7 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
                 tosUri
                   ? `
                 <div class="client-detail">
-                  <div class="detail-label">Terms of Service:</div>
+                  <div class="detail-label">服务条款:</div>
                   <div class="detail-value">
                     <a href="${tosUri}" target="_blank" rel="noopener noreferrer">
                       ${tosUri}
@@ -500,7 +500,7 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
                 redirectUris.length > 0
                   ? `
                 <div class="client-detail">
-                  <div class="detail-label">Redirect URIs:</div>
+                  <div class="detail-label">重定向 URI:</div>
                   <div class="detail-value small">
                     ${redirectUris.map((uri) => `<div>${uri}</div>`).join('')}
                   </div>
@@ -513,7 +513,7 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
                 contacts
                   ? `
                 <div class="client-detail">
-                  <div class="detail-label">Contact:</div>
+                  <div class="detail-label">联系人:</div>
                   <div class="detail-value">${contacts}</div>
                 </div>
               `
@@ -521,14 +521,14 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
               }
             </div>
             
-            <p>This MCP Client is requesting to be authorized on ${serverName}. If you approve, you will be redirected to complete authentication.</p>
+            <p>这个 MCP 客户端正在请求授权访问 ${serverName}。如果批准，您将被重定向以完成身份验证。</p>
             
             <form method="post" action="${new URL(request.url).pathname}">
               <input type="hidden" name="state" value="${encodedState}">
               
               <div class="actions">
-                <button type="button" class="button button-secondary" onclick="window.history.back()">Cancel</button>
-                <button type="submit" class="button button-primary">Approve</button>
+                <button type="button" class="button button-secondary" onclick="window.history.back()">取消</button>
+                <button type="submit" class="button button-primary">批准</button>
               </div>
             </form>
           </div>

@@ -21,9 +21,9 @@ app.get('/authorize', async (c) => {
 	return renderApprovalDialog(c.req.raw, {
 		client: await c.env.OAUTH_PROVIDER.lookupClient(clientId),
 		server: {
-			name: "Cloudflare Feishu MCP Server",
-			logo: "https://sf1-cdn-tos.douyinstatic.com/obj/eden-cn/upqphb/feishu/favicon.ico",
-			description: 'This is an MCP Remote Server using Feishu for authentication.', // optional
+			name: "飞书 MCP 服务",
+			logo: "https://fms-r2.tapeless.eu.org/Frame%203.svg",
+			description: '这是一个远程服务，使用飞书进行认证。', // optional
 		},
 		state: { oauthReqInfo }, // arbitrary data that flows through the form submission below
 	});
