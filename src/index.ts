@@ -1,39 +1,41 @@
-import OAuthProvider from '@cloudflare/workers-oauth-provider'
-import { McpAgent } from 'agents/mcp'
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { z } from 'zod'
-import { FeishuHandler } from './feishu-handler'
-import { Props, refreshUpstreamAuthToken } from './utils'
-import { caseTransf } from './mcp-tool/utils/case-transf'
-import { larkOapiHandler } from './mcp-tool/utils/handler'
-import { getShouldUseUAT } from './mcp-tool/utils/get-should-use-uat'
-import { TokenMode } from './mcp-tool/types'
-import { docxBuiltinToolName, docxBuiltinTools } from './mcp-tool/tools/zh/builtin-tools/docx/builtin'
-import { GenTools } from './mcp-tool/tools/zh/gen-tools'
-import { Client } from '@larksuiteoapi/node-sdk'
-import { env } from 'cloudflare:workers'
-import { oapiHttpInstance } from './utils/http-instance'
-import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools'
-import { RecallTool } from './mcp-tool/document-tool/recall'
-import { docxAddonsMermaidCreate } from './tools/document/addons/mermaid'
-import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document'
-import { mediaUploadTool } from './tools/drive'
-import { zodToJsonSchema } from 'zod-to-json-schema'
+import OAuthProvider from '@cloudflare/workers-oauth-provider';
+import { McpAgent } from 'agents/mcp';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
+import { Client } from '@larksuiteoapi/node-sdk';
+import { env } from 'cloudflare:workers';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+
+import { FeishuHandler } from './feishu-handler';
+import { Props, refreshUpstreamAuthToken } from './utils';
+import { caseTransf } from './mcp-tool/utils/case-transf';
+import { larkOapiHandler } from './mcp-tool/utils/handler';
+import { getShouldUseUAT } from './mcp-tool/utils/get-should-use-uat';
+import { TokenMode } from './mcp-tool/types';
+import { docxBuiltinToolName, docxBuiltinTools } from './mcp-tool/tools/zh/builtin-tools/docx/builtin';
+import { GenTools } from './mcp-tool/tools/zh/gen-tools';
+import { oapiHttpInstance } from './utils/http-instance';
+import { BuiltinTools } from './mcp-tool/tools/zh/builtin-tools';
+import { RecallTool } from './mcp-tool/document-tool/recall';
+import { docxAddonsMermaidCreate } from './tools/document/addons/mermaid';
+import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document';
+import { mediaUploadTool } from './tools/drive';
+
 
 const ALLOWED_USER_IDS = new Set([
   // Add Feishu user IDs of users who should have access to the image generation tool
   // For example: 'ou_xxxx', 'ou_yyyy'
-])
+]);
 const client = new Client({
   appId: env.FEISHU_APP_ID,
   appSecret: env.FEISHU_APP_SECRET,
-})
-client.httpInstance = oapiHttpInstance
+});
+client.httpInstance = oapiHttpInstance;
 export class MyMCP extends McpAgent<Props, Env> {
   server = new McpServer({
     name: 'Feishu OAuth Proxy Demo',
     version: '1.0.0',
-  })
+  });
 
   async init() {
     // Hello, world!
@@ -48,7 +50,7 @@ export class MyMCP extends McpAgent<Props, Env> {
           Authorization: `Bearer ${this.props.accessToken}`,
           'Content-Type': 'application/json; charset=utf-8',
         },
-      })
+      });
 
       if (!response.ok) {
         return {
@@ -58,10 +60,10 @@ export class MyMCP extends McpAgent<Props, Env> {
               text: 'Failed to fetch user info: ' + (await response.text()),
             },
           ],
-        }
+        };
       }
 
-      const data = await response.json()
+      const data = await response.json();
       return {
         content: [
           {
@@ -69,8 +71,8 @@ export class MyMCP extends McpAgent<Props, Env> {
             text: JSON.stringify(data),
           },
         ],
-      }
-    })
+      };
+    });
 
     // for (const tool of BuiltinTools) {
     //   if (tool) {
@@ -105,7 +107,7 @@ export class MyMCP extends McpAgent<Props, Env> {
     // }
     this.server.tool(RecallTool.name, RecallTool.description, RecallTool.schema, (params) =>
       RecallTool.handler(params, { userAccessToken: this.props.accessToken, domain: 'https://open.feishu.cn' }),
-    )
+    );
 
     // 新增：创建文本绘图文档小组件块工具
     // this.server.tool(docxAddonsMermaidCreate.name, docxAddonsMermaidCreate.description, docxAddonsMermaidCreate.schema, async (params) => {
@@ -125,15 +127,15 @@ export class MyMCP extends McpAgent<Props, Env> {
 
     this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.schema, async (params) => {
       try {
-        return await blockTreeTool.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: blockTreeTool })
+        return await blockTreeTool.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: blockTreeTool });
       } catch (error) {
-        console.error('blockTreeTool 工具执行失败:', error)
+        console.error('blockTreeTool 工具执行失败:', error);
         return {
           isError: true,
           content: [{ type: 'text', text: `获取文档块树失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        }
+        };
       }
-    })
+    });
     this.server.tool(
       docxV1BlockTypeSchemaGet.name,
       docxV1BlockTypeSchemaGet.description,
@@ -143,16 +145,16 @@ export class MyMCP extends McpAgent<Props, Env> {
           return await docxV1BlockTypeSchemaGet.customHandler(client, params, {
             userAccessToken: this.props.accessToken,
             tool: docxV1BlockTypeSchemaGet,
-          })
+          });
         } catch (error) {
-          console.error('docxV1BlockTypeSchemaGet 工具执行失败:', error)
+          console.error('docxV1BlockTypeSchemaGet 工具执行失败:', error);
           return {
             isError: true,
             content: [{ type: 'text', text: `获取块类型 schema 失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-          }
+          };
         }
       },
-    )
+    );
     this.server.tool(
       docxV1DocumentBlockChildrenCreateSimple.name,
       docxV1DocumentBlockChildrenCreateSimple.description,
@@ -162,78 +164,78 @@ export class MyMCP extends McpAgent<Props, Env> {
           return await docxV1DocumentBlockChildrenCreateSimple.customHandler(client, params, {
             userAccessToken: this.props.accessToken,
             tool: docxV1DocumentBlockChildrenCreateSimple,
-          })
+          });
         } catch (error) {
-          console.error('docxV1DocumentBlockChildrenCreateSimple 工具执行失败:', error)
+          console.error('docxV1DocumentBlockChildrenCreateSimple 工具执行失败:', error);
           return {
             isError: true,
             content: [{ type: 'text', text: `创建块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-          }
+          };
         }
       },
-    )
+    );
 
     this.server.tool(mediaUploadTool.name, mediaUploadTool.description, mediaUploadTool.schema, async (params) => {
       try {
-        return await mediaUploadTool.customHandler(params, { userAccessToken: this.props.accessToken })
+        return await mediaUploadTool.customHandler(params, { userAccessToken: this.props.accessToken });
       } catch (error) {
-        console.error('mediaUploadTool 工具执行失败:', error)
+        console.error('mediaUploadTool 工具执行失败:', error);
         return {
           isError: true,
           content: [{ type: 'text', text: `mediaUploadTool 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        }
+        };
       }
-    })
+    });
 
     this.server.tool(docxBlockPatch.name, docxBlockPatch.description, docxBlockPatch.schema, async (params) => {
       try {
-        return await docxBlockPatch.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockPatch })
+        return await docxBlockPatch.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockPatch });
       } catch (error) {
-        console.error('docxBlockPatch 工具执行失败:', error)
+        console.error('docxBlockPatch 工具执行失败:', error);
         return {
           isError: true,
           content: [{ type: 'text', text: `docxBlockPatch 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        }
+        };
       }
-    })
+    });
 
     this.server.tool(docxV1DocumentTableCreate.name, docxV1DocumentTableCreate.description, docxV1DocumentTableCreate.schema, async (params) => {
       try {
-        return await docxV1DocumentTableCreate.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxV1DocumentTableCreate })
+        return await docxV1DocumentTableCreate.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxV1DocumentTableCreate });
       } catch (error) {
-        console.error('docxV1DocumentTableCreate 工具执行失败:', error)
+        console.error('docxV1DocumentTableCreate 工具执行失败:', error);
         return {
           isError: true,
           content: [{ type: 'text', text: `docxV1DocumentTableCreate 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        }
+        };
       }
-    })
+    });
 
-    this.server.tool(docxImageOrVideoOrFileCreate.name, docxImageOrVideoOrFileCreate.description, docxImageOrVideoOrFileCreate.schema, docxImageOrVideoOrFileCreate.customHandler)
+    this.server.tool(docxImageOrVideoOrFileCreate.name, docxImageOrVideoOrFileCreate.description, docxImageOrVideoOrFileCreate.schema, docxImageOrVideoOrFileCreate.customHandler);
 
     this.server.tool(docxMarkdownImport.name, docxMarkdownImport.description, docxMarkdownImport.schema, async (params) => {
       try {
-        return await docxMarkdownImport.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownImport })
+        return await docxMarkdownImport.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownImport });
       } catch (error) {
-        console.error('docxMarkdownImport 工具执行失败:', error)
+        console.error('docxMarkdownImport 工具执行失败:', error);
         return {
           isError: true,
           content: [{ type: 'text', text: `docxMarkdownImport 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        }
+        };
       }
-    })
+    });
 
     this.server.tool(docxBlockBatchDelete.name, docxBlockBatchDelete.description, docxBlockBatchDelete.schema, async (params) => {
       try {
-        return await docxBlockBatchDelete.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockBatchDelete })
+        return await docxBlockBatchDelete.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockBatchDelete });
       } catch (error) {
-        console.error('docxBlockBatchDelete 工具执行失败:', error)
+        console.error('docxBlockBatchDelete 工具执行失败:', error);
         return {
           isError: true,
           content: [{ type: 'text', text: `docxBlockBatchDelete 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        }
+        };
       }
-    })
+    });
   }
 }
 
@@ -249,7 +251,7 @@ export default new OAuthProvider({
     if (options.grantType === 'authorization_code') {
       return {
         accessTokenProps: options.props,
-      }
+      };
     }
     if (options.grantType === 'refresh_token') {
       const [accessToken, refreshToken, expiresIn, errResponse] = await refreshUpstreamAuthToken({
@@ -257,7 +259,7 @@ export default new OAuthProvider({
         upstream_url: 'https://open.feishu.cn/open-apis/authen/v2/oauth/token',
         client_id: env.FEISHU_APP_ID,
         client_secret: env.FEISHU_APP_SECRET,
-      })
+      });
       // console.log('refreshUpstreamAuthToken', refreshToken)
       if (errResponse) {
       } else {
@@ -268,8 +270,8 @@ export default new OAuthProvider({
             refreshToken: refreshToken,
           },
           accessTokenTTL: expiresIn,
-        }
+        };
       }
     }
   },
-})
+});

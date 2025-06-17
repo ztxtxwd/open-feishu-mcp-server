@@ -1,6 +1,8 @@
-import { z } from 'zod'
-import { addMermaidBlockMarkers } from '../../utils/markdown-processor'
-import fs from 'fs'
+import fs from 'fs';
+
+import { z } from 'zod';
+
+import { addMermaidBlockMarkers } from '../../utils/markdown-processor';
 
 export const mediaUploadTool = {
   project: 'drive',
@@ -18,12 +20,12 @@ export const mediaUploadTool = {
   },
   customHandler: async (params: any, options: any): Promise<any> => {
     try {
-      const { userAccessToken } = options || {}
-      let file:File = new File([], '')
-      let actualFileName = params.file_name
+      const { userAccessToken } = options || {};
+      let file:File = new File([], '');
+      let actualFileName = params.file_name;
       
       if(params.base64){
-        file = new File([Buffer.from(params.base64, 'base64')], params.file_name)
+        file = new File([Buffer.from(params.base64, 'base64')], params.file_name);
       }
       if(params.svg2png){
         // 将svg转换为png使用在线服务
@@ -35,38 +37,38 @@ export const mediaUploadTool = {
           body: JSON.stringify({
             svg: params.svg2png
           })
-        })
+        });
 
-        const pngBuffer = await response.arrayBuffer()
+        const pngBuffer = await response.arrayBuffer();
 
         // 创建png文件，如果文件名不是png结尾，则添加.png后缀
         actualFileName = params.file_name.endsWith('.png') 
           ? params.file_name 
-          : params.file_name + '.png'
+          : params.file_name + '.png';
         
-        file = new File([pngBuffer], actualFileName)
+        file = new File([pngBuffer], actualFileName);
       }
       // url有值，先下载文件
       if (params.url){
-        const response = await fetch(params.url)
-        file = new File([await response.blob()], params.file_name)
+        const response = await fetch(params.url);
+        file = new File([await response.blob()], params.file_name);
       }
 
       // 处理 markdown 内容，为 mermaid 代码块添加标记
       if ( params.file_name.endsWith('.md') && params.text){
-        params.text = addMermaidBlockMarkers(params.text)
+        params.text = addMermaidBlockMarkers(params.text);
       }
 
       if(params.text){
-        file = new File([params.text], params.file_name)
+        file = new File([params.text], params.file_name);
       }
       // 构造 FormData
-      const formData = new FormData()
-      formData.append('file_name', actualFileName)
-      formData.append('parent_type', params.parent_type || 'ccm_import_open')
-      formData.append('parent_node', params.parent_node)
-      formData.append('size', file.size.toString())
-      formData.append('file', file)
+      const formData = new FormData();
+      formData.append('file_name', actualFileName);
+      formData.append('parent_type', params.parent_type || 'ccm_import_open');
+      formData.append('parent_node', params.parent_node);
+      formData.append('size', file.size.toString());
+      formData.append('file', file);
       // 发起 POST 请求
       const resp = await fetch('https://open.feishu.cn/open-apis/drive/v1/medias/upload_all', {
         method: 'POST',
@@ -75,18 +77,18 @@ export const mediaUploadTool = {
           // Content-Type 不需手动设置，fetch 会自动添加 multipart 边界
         },
         body: formData,
-      })
-      const result = await resp.json() as any
+      });
+      const result = await resp.json() as any;
       // const response =
       //   userAccessToken && params.useUAT
       //     ? await client.drive.media.uploadAll({ data }, lark.withUserAccessToken(userAccessToken))
       //     : await client.drive.media.uploadAll({ data })
-      const response = result.data
+      const response = result.data;
       if (!response?.file_token) {
         return {
           isError: true,
           content: [{ type: 'text' as const, text: '上传素材失败，请检查文件内容或文件类型'+JSON.stringify(result) }],
-        }
+        };
       }
 
       
@@ -100,9 +102,9 @@ export const mediaUploadTool = {
             }`,
           },
         ],
-      }
+      };
     } catch (error) {
-      console.error('上传素材失败:', error)
+      console.error('上传素材失败:', error);
       return {
         isError: true,
         content: [
@@ -111,7 +113,7 @@ export const mediaUploadTool = {
             text: `上传素材失败: ${JSON.stringify((error as any)?.response?.data || error)}`,
           },
         ],
-      }
+      };
     }
   },
-}
+};

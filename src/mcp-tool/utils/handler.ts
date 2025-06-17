@@ -1,4 +1,5 @@
 import * as lark from '@larksuiteoapi/node-sdk';
+
 import { McpHandler, McpHandlerOptions } from '../types';
 
 const sdkFuncCall = async (client: lark.Client, params: any, options: McpHandlerOptions) => {

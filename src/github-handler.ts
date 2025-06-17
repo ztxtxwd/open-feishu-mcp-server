@@ -1,21 +1,22 @@
-import type { AuthRequest, OAuthHelpers } from '@cloudflare/workers-oauth-provider'
-import { Hono } from 'hono'
-import { Octokit } from 'octokit'
-import { fetchUpstreamAuthToken, getUpstreamAuthorizeUrl, Props } from './utils'
-import { env } from 'cloudflare:workers'
-import { clientIdAlreadyApproved, parseRedirectApproval, renderApprovalDialog } from './workers-oauth-utils'
+import type { AuthRequest, OAuthHelpers } from '@cloudflare/workers-oauth-provider';
+import { Hono } from 'hono';
+import { Octokit } from 'octokit';
+import { env } from 'cloudflare:workers';
 
-const app = new Hono<{ Bindings: Env & { OAUTH_PROVIDER: OAuthHelpers } }>()
+import { fetchUpstreamAuthToken, getUpstreamAuthorizeUrl, Props } from './utils';
+import { clientIdAlreadyApproved, parseRedirectApproval, renderApprovalDialog } from './workers-oauth-utils';
+
+const app = new Hono<{ Bindings: Env & { OAUTH_PROVIDER: OAuthHelpers } }>();
 
 app.get('/authorize', async (c) => {
-	const oauthReqInfo = await c.env.OAUTH_PROVIDER.parseAuthRequest(c.req.raw)
-	const { clientId } = oauthReqInfo
+	const oauthReqInfo = await c.env.OAUTH_PROVIDER.parseAuthRequest(c.req.raw);
+	const { clientId } = oauthReqInfo;
 	if (!clientId) {
-		return c.text('Invalid request', 400)
+		return c.text('Invalid request', 400);
 	}
 
 	if (await clientIdAlreadyApproved(c.req.raw, oauthReqInfo.clientId, env.COOKIE_ENCRYPTION_KEY)) {
-		return redirectToGithub(c.req.raw, oauthReqInfo)
+		return redirectToGithub(c.req.raw, oauthReqInfo);
 	}
 
 	return renderApprovalDialog(c.req.raw, {
@@ -26,18 +27,18 @@ app.get('/authorize', async (c) => {
 			description: 'This is a demo MCP Remote Server using GitHub for authentication.', // optional
 		},
 		state: { oauthReqInfo }, // arbitrary data that flows through the form submission below
-	})
-})
+	});
+});
 
 app.post('/authorize', async (c) => {
 	// Validates form submission, extracts state, and generates Set-Cookie headers to skip approval dialog next time
-	const { state, headers } = await parseRedirectApproval(c.req.raw, env.COOKIE_ENCRYPTION_KEY)
+	const { state, headers } = await parseRedirectApproval(c.req.raw, env.COOKIE_ENCRYPTION_KEY);
 	if (!state.oauthReqInfo) {
-		return c.text('Invalid request', 400)
+		return c.text('Invalid request', 400);
 	}
 
-	return redirectToGithub(c.req.raw, state.oauthReqInfo, headers)
-})
+	return redirectToGithub(c.req.raw, state.oauthReqInfo, headers);
+});
 
 async function redirectToGithub(request: Request, oauthReqInfo: AuthRequest, headers: Record<string, string> = {}) {
 	return new Response(null, {
@@ -52,7 +53,7 @@ async function redirectToGithub(request: Request, oauthReqInfo: AuthRequest, hea
 				state: btoa(JSON.stringify(oauthReqInfo)),
 			}),
 		},
-	})
+	});
 }
 
 /**
@@ -78,7 +79,7 @@ app.get("/callback", async (c) => {
 		code: c.req.query("code"),
 		redirect_uri: new URL("/callback", c.req.url).href,
 	});
-	if (errResponse) return errResponse;
+	if (errResponse) {return errResponse;}
 
 	// Fetch the user info from GitHub
 	const user = await new Octokit({ auth: accessToken }).rest.users.getAuthenticated();
@@ -104,4 +105,4 @@ app.get("/callback", async (c) => {
 	return Response.redirect(redirectTo);
 });
 
-export { app as GitHubHandler }
+export { app as GitHubHandler };

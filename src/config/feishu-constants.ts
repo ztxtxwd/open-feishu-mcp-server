@@ -32,6 +32,6 @@ export const FEISHU_CONSTANTS = {
     FOREST: 'forest',
     NEUTRAL: 'neutral',
   } as const,
-} as const
+} as const;
 
 export type FeishuTheme = keyof typeof FEISHU_CONSTANTS.THEMES 

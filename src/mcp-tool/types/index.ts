@@ -1,6 +1,7 @@
 import * as lark from '@larksuiteoapi/node-sdk';
-import { ProjectName, ToolName } from '../tools';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
+
+import { ProjectName, ToolName } from '../tools';
 
 export type ToolNameCase = 'snake' | 'camel' | 'kebab' | 'dot';
 

@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { USER_AGENT } from './constants';
 
 export const oapiHttpInstance = axios.create();

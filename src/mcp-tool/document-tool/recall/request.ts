@@ -1,6 +1,8 @@
 import axios from 'axios';
-import { DocumentRecallToolOptions } from './type';
+
 import { USER_AGENT } from '../../../utils/constants';
+
+import { DocumentRecallToolOptions } from './type';
 
 export const recallDeveloperDocument = async (query: string, options: DocumentRecallToolOptions) => {
   try {
@@ -17,7 +19,7 @@ export const recallDeveloperDocument = async (query: string, options: DocumentRe
     });
 
     // Process search results
-    let results = response.data.chunks || [];
+    const results = response.data.chunks || [];
     return results.slice(0, count);
   } catch (error) {
     throw error;
