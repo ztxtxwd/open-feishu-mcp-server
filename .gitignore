@@ -172,3 +172,5 @@ dist
 .wrangler/
 
 lark-openapi-mcp/
+.specstory/
+reports/

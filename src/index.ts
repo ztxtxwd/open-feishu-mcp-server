@@ -225,8 +225,11 @@ export class MyMCP extends McpAgent<Props, Env> {
 }
 
 export default new OAuthProvider({
-  apiRoute: '/sse',
-  apiHandler: MyMCP.mount('/sse'),
+  apiRoute: '/mcp',
+  apiHandlers: {
+    '/mcp': MyMCP.serve('/mcp'),
+    '/sse': MyMCP.serveSSE('/sse'),
+  },
   defaultHandler: FeishuHandler,
   authorizeEndpoint: '/authorize',
   tokenEndpoint: '/token',
