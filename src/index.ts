@@ -127,10 +127,7 @@ export class MyMCP extends McpAgent<Props, Env> {
       docxV1BlockTypeSchemaGet.schema,
       async (params) => {
         try {
-          return await docxV1BlockTypeSchemaGet.customHandler(client, params, {
-            userAccessToken: this.props.accessToken,
-            tool: docxV1BlockTypeSchemaGet,
-          });
+          return await docxV1BlockTypeSchemaGet.customHandler(params);
         } catch (error) {
           console.error('docxV1BlockTypeSchemaGet 工具执行失败:', error);
           return {
