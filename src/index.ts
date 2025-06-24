@@ -10,6 +10,7 @@ import { oapiHttpInstance } from './utils/http-instance';
 import { RecallTool } from './mcp-tool/document-tool/recall';
 import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document';
 import { mediaUploadTool } from './tools/drive';
+import { z } from 'zod';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -21,6 +22,10 @@ export class MyMCP extends McpAgent<Props, Env> {
     name: 'Feishu OAuth Proxy Demo',
     version: '1.0.0',
   });
+  // 统一回调，打包params和client、userAccessToken，传给customHandler
+  async handler(params: any, customHandler: any) {
+    return await customHandler(params, client, this.props.accessToken);
+  }
 
   async init() {
     // Hello, world!
@@ -110,16 +115,8 @@ export class MyMCP extends McpAgent<Props, Env> {
     //   }
     // })
 
-    this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.schema, async (params) => {
-      try {
-        return await blockTreeTool.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: blockTreeTool });
-      } catch (error) {
-        console.error('blockTreeTool 工具执行失败:', error);
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `获取文档块树失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        };
-      }
+    this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.inputSchema, async (params) => {
+      return await this.handler(params, blockTreeTool.customHandler);
     });
     this.server.tool(
       docxV1BlockTypeSchemaGet.name,
