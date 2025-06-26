@@ -166,16 +166,8 @@ export class MyMCP extends McpAgent<Props, Env> {
       }
     });
 
-    this.server.tool(docxBlockPatch.name, docxBlockPatch.description, docxBlockPatch.schema, async (params) => {
-      try {
-        return await docxBlockPatch.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockPatch });
-      } catch (error) {
-        console.error('docxBlockPatch 工具执行失败:', error);
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `docxBlockPatch 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        };
-      }
+    this.server.tool(docxBlockPatch.name, docxBlockPatch.description, docxBlockPatch.inputSchema, async (params) => {
+      return await this.handler(params, docxBlockPatch.customHandler);
     });
 
     this.server.tool(docxV1DocumentTableCreate.name, docxV1DocumentTableCreate.description, docxV1DocumentTableCreate.schema, async (params) => {

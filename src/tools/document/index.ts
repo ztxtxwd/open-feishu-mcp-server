@@ -5,113 +5,9 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { FEISHU_CONSTANTS } from '../../config/feishu-constants';
 import { addMermaidBlockMarkers } from '../../utils/markdown-processor';
-export { blockTreeTool } from './block';
+export { blockTreeTool, docxBlockPatch } from './block';
 
-export const docxBlockPatch = {
-  project: 'docx',
-  name: 'docx_block_patch',
-  sdkName: 'docx.v1.documentBlock.patch',
-  path: '/open-apis/docx/v1/documents/:document_id/blocks/:block_id',
-  httpMethod: 'PATCH',
-  description: '[Feishu/Lark]-云文档-文档-块-更新块的内容-更新指定的块',
-  accessTokens: ['tenant', 'user'],
-  schema: {
-    data: z.object({
-      update_text_elements: z.any().describe('更新文本元素请求').optional(),
-      update_text_style: z.any().describe('更新文本样式请求').optional(),
-      update_table_property: z
-        .object({
-          column_width: z.number().describe('表格列宽'),
-          column_index: z.number().describe('需要修改列宽的表格列的索引'),
-        })
-        .describe('更新表格属性请求')
-        .optional(),
-      insert_table_row: z
-        .object({ row_index: z.number().describe('插入的行在表格中的索引。（-1表示在表格末尾插入一行）') })
-        .describe('表格插入新行请求')
-        .optional(),
-      insert_table_column: z
-        .object({ column_index: z.number().describe('插入的列在表格中的索引。（-1表示在表格末尾插入一列）') })
-        .describe('表格插入新列请求')
-        .optional(),
-      delete_table_rows: z
-        .object({
-          row_start_index: z.number().describe('行开始索引（区间左闭右开）'),
-          row_end_index: z.number().describe('行结束索引（区间左闭右开）'),
-        })
-        .describe('表格批量删除行请求')
-        .optional(),
-      delete_table_columns: z
-        .object({
-          column_start_index: z.number().describe('列开始索引（区间左闭右开）'),
-          column_end_index: z.number().describe('列结束索引（区间左闭右开）'),
-        })
-        .describe('表格批量删除列请求')
-        .optional(),
-      merge_table_cells: z
-        .object({
-          row_start_index: z.number().describe('行起始索引（区间左闭右开）'),
-          row_end_index: z.number().describe('行结束索引（区间左闭右开）'),
-          column_start_index: z.number().describe('列起始索引（区间左闭右开）'),
-          column_end_index: z.number().describe('列结束索引（区间左闭右开）'),
-        })
-        .describe('表格合并单元格请求')
-        .optional(),
-      unmerge_table_cells: z
-        .object({ row_index: z.number().describe('table 行索引'), column_index: z.number().describe('table 列索引') })
-        .describe('表格取消单元格合并状态请求')
-        .optional(),
-      insert_grid_column: z
-        .object({
-          column_index: z.number().describe('插入列索引，从 1 开始，如 1 表示在第一列后插入，注意不允许传 0（-1表示在最后一列后插入）'),
-        })
-        .describe('分栏插入新的分栏列请求')
-        .optional(),
-      delete_grid_column: z
-        .object({
-          column_index: z.number().describe('删除列索引，从 0 开始，如 0 表示删除第一列（-1表示删除最后一列）'),
-        })
-        .describe('分栏删除列请求')
-        .optional(),
-      update_grid_column_width_ratio: z
-        .object({ width_ratios: z.array(z.number()).describe('更新列宽比例时，需要传入所有列宽占比') })
-        .describe('更新分栏列宽比例请求')
-        .optional(),
-      replace_image: z
-        .object({ token: z.string().describe('图片 token') })
-        .describe('替换图片请求')
-        .optional(),
-      replace_file: z
-        .object({ token: z.string().describe('附件 token') })
-        .describe('替换附件请求')
-        .optional(),
-      update_text: z.any().describe('更新文本元素及样式请求').optional(),
-    }),
-    path: z.object({
-      document_id: z.string().describe('文档唯一标识。对应新版文档 Token，'),
-      block_id: z.string().describe('Block 的唯一标识'),
-    }),
-  },
-  customHandler: async (client: Client, params: any, options: any) => {
-    try {
-      const result = await client.docx.v1.documentBlock.patch(params, lark.withUserAccessToken(options.userAccessToken));
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result.data),
-          },
-        ],
-      };
-    } catch (error) {
-      console.error('docxBlockPatch 工具执行失败:', error);
-      return {
-        isError: true,
-        content: [{ type: 'text', text: `docxBlockPatch 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-      };
-    }
-  },
-};
+
 
 export const docxV1BlockTypeSchemaGet = {
   project: 'docx',
@@ -136,11 +32,11 @@ export const docxV1BlockTypeSchemaGet = {
         '九级标题',
         '无序列表',
         '有序列表',
-        '代码块',
+        '代码',
         '引用',
         '公式',
         '待办事项',
-        '高亮块',
+        '高亮',
         '群聊卡片',
         '分割线',
         '分栏',
@@ -3462,7 +3358,7 @@ export const docxV1BlockTypeSchemaGet = {
             },
           ],
         };
-      case '代码块':
+      case '代码':
         return {
           content: [
             {
@@ -4116,7 +4012,7 @@ export const docxV1BlockTypeSchemaGet = {
             },
           ],
         };
-      case '高亮块':
+      case '高亮':
         return {
           content: [
             {
@@ -5072,7 +4968,7 @@ export const docxV1BlockTypeSchemaGet = {
                             'beach_with_umbrella',
                             'desert_island',
                           ])
-                          .describe('高亮块 emoji 的 id')
+                          .describe('高亮 emoji 的 id')
                           .optional(),
                         background_color: z
                           .number()
@@ -5093,7 +4989,7 @@ export const docxV1BlockTypeSchemaGet = {
                           )
                           .optional(),
                       })
-                      .describe('高亮块 Block'),
+                      .describe('高亮 Block'),
                   }),
                 ),
               ),
@@ -5496,7 +5392,7 @@ export const docxV1DocumentBlockChildrenCreateSimple = {
     }),
     path: z.object({
       document_id: z.string().describe('文档唯一标识'),
-      block_id: z.string().describe('Block 的唯一标识，确定要在分栏、表格、高亮块中创建子块，请传入分栏、表格、高亮块的 BlockID，否则传入document_id'),
+      block_id: z.string().describe('Block 的唯一标识，确定要在分栏、表格、高亮中创建子块，请传入分栏、表格、高亮的 BlockID，否则传入document_id'),
     }),
   },
   customHandler: async (client: Client, params: any, options: any) => {

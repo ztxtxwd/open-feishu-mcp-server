@@ -1,1 +1,3 @@
-export { blockTreeTool } from './tree'; 
+export { blockTreeTool } from './tree';
+export { docxBlockPatch } from './patch'; 
+
