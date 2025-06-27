@@ -275,3 +275,7 @@ npx @modelcontextprotocol/inspector@latest
 ---
 
 **📝 注意**：确保在部署前正确配置所有环境变量和飞书应用设置。如遇问题，请检查飞书应用权限配置和重定向 URL 设置。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ztxtxwd/feishu-mcp-server&type=Date)](https://star-history.com/#ztxtxwd/feishu-mcp-server&Date)
