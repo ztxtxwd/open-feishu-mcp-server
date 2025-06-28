@@ -1,12 +1,23 @@
 import z from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { convertDescriptionToString, McpToolDescription } from '../../types';
+
+const description: McpToolDescription = {
+  shortDescription: '飞书-云文档-文档-块-获取块类型Schema-获取指定块类型的创建参数结构',
+  bestFor: '了解任何块类型的详细参数结构和字段说明，为后续创建块做准备',
+  notRecommendedFor: '直接创建块（获取schema后请使用docx_block_create工具）',
+  promptExample: '获取文本块的创建参数结构',
+  usageExample: 'docx_block_schema_get({block_type: "文本"})',
+  returns: '指定块类型的完整JSON Schema，包含所有可用字段和选项说明'
+};
+
 export const docxV1BlockTypeSchemaGet = {
   project: 'docx',
   name: 'docx_block_schema_get',
   sdkName: 'docx.v1.blockType.schema.get',
   path: '/internal/block-schema', // 内部路径，非API调用
   httpMethod: 'GET',
-  description: '获取指定块类型的创建参数 schema。先调用此工具了解块类型的参数结构，再使用 docxV1DocumentBlockChildrenCreateSimple 创建块。',
+  description: convertDescriptionToString(description),
   accessTokens: [],
   schema: {
     block_type: z

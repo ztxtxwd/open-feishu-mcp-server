@@ -3,6 +3,7 @@ import { Client } from '@larksuiteoapi/node-sdk';
 import * as lark from '@larksuiteoapi/node-sdk';
 
 import { FEISHU_CONSTANTS } from '../../../config/feishu-constants';
+import { convertDescriptionToString, McpToolDescription } from '../../types';
 import {
   get补全后的文本绘图块参数,
   get补全后的名词解释块参数,
@@ -13,14 +14,22 @@ import {
   get补全后的附件块参数
 } from '../addons/helpers';
 
+const description: McpToolDescription = {
+  shortDescription: '飞书-云文档-文档-块-创建块-为指定块创建子块并插入到指定位置',
+  bestFor: '文本、标题、列表、代码、引用、待办事项、高亮、表格、图片、附件、文件、视频、插件块（文本绘图、名词解释、时间轴、目录导航、信息收集、倒计时）等所有块类型的创建',
+  notRecommendedFor: '复杂嵌套结构的批量创建，建议分步创建',
+  promptExample: '在文档中创建一个文本块，内容为"Hello World"',
+  usageExample: 'docx_block_create({document_id: "xxx", block_id: "xxx", data: {children: [{block_type: 2, text: {...}}]}})',
+  returns: '新创建的块信息，包括块ID和富文本内容'
+};
+
 export const docxV1DocumentBlockChildrenCreateSimple = {
   project: 'docx',
   name: 'docx_block_create',
   sdkName: 'docx.v1.documentBlockChildren.create',
   path: '/open-apis/docx/v1/documents/:document_id/blocks/:block_id/children',
   httpMethod: 'POST',
-  description:
-    '[Feishu/Lark]-云文档-文档-块-创建块-指定需要操作的块，为其创建一批子块，并插入到指定位置。如果操作成功，接口将返回新创建子块的富文本内容',
+  description: convertDescriptionToString(description),
   accessTokens: ['tenant', 'user'],
   schema: {
     data: z.object({

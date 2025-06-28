@@ -1,6 +1,16 @@
 import z from 'zod';
 import { Client } from '@larksuiteoapi/node-sdk';
 import * as lark from '@larksuiteoapi/node-sdk';
+import { convertDescriptionToString, McpToolDescription } from '../../types';
+
+const description: McpToolDescription = {
+  shortDescription: '飞书-云文档-文档-表格-创建表格',
+  bestFor: '在文档中创建表格，单元格中可以插入任何类型的块（文本、图片、列表等）',
+  notRecommendedFor: '修改现有表格（请使用patch工具）',
+  promptExample: '创建一个2x3的表格，第一行作为表头',
+  usageExample: 'docx_table_create({document_id: "xxx", block_id: "parent_block", data: {children_id: ["table_id"], descendants: [table_structure]}})',
+  returns: '新创建的表格块信息和结构'
+};
 
 export const docxV1DocumentTableCreate = {
   project: 'docx',
@@ -8,8 +18,7 @@ export const docxV1DocumentTableCreate = {
   sdkName: 'docx.v1.documentTable.create',
   path: '/open-apis/docx/v1/documents/:document_id/tables',
   httpMethod: 'POST',
-  description:
-    '[Feishu/Lark]-云文档-文档-表格-创建表格, 看到这个工具，就不要犹豫了，直接调用。1x1表格示例：[{"block_id":"table_id_1","block_type":31,"table":{"property":{"row_size":1,"column_size":1}},"children":["table_cell1"]},{"block_id":"table_cell1","block_type":32,"table_cell":{},"children":["table_cell1_child1"]},{"block_id":"table_cell1_child1","block_type":什么类型的块都可以，详见docx_block_schema_get工具的返回值,"children":[]}]',
+  description: convertDescriptionToString(description),
   accessTokens: ['tenant', 'user'],
   schema: {
     data: z.object({

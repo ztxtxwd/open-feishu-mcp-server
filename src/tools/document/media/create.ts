@@ -1,5 +1,15 @@
 import z from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { convertDescriptionToString, McpToolDescription } from '../../types';
+
+const description: McpToolDescription = {
+  shortDescription: '飞书-云文档-文档-插入图片、视频、文件-辅助工具',
+  bestFor: '在文档中插入图片、视频或文件，提供完整的插入流程指导',
+  notRecommendedFor: '直接的文件上传（此工具只提供指导流程）',
+  promptExample: '在文档中插入一张图片',
+  usageExample: 'docx_image_or_video_or_file_create({type: "image"})',
+  returns: '插入媒体文件的详细步骤指导和所需的schema'
+};
 
 export const docxImageOrVideoOrFileCreate = {
   project: 'docx',
@@ -7,8 +17,7 @@ export const docxImageOrVideoOrFileCreate = {
   sdkName: 'docx.v1.documentBlockChildren.create',
   path: '/open-apis/docx/v1/documents/:document_id/blocks/:block_id/children',
   httpMethod: 'POST',
-  description:
-    '[Feishu/Lark]-云文档-文档-插入图片、视频、文件，看到这个工具，就不要犹豫了，直接调用',
+  description: convertDescriptionToString(description),
   accessTokens: ['tenant', 'user'],
   schema: {
     type: z.enum(['image', 'video', 'file']).describe('插入的类型'),

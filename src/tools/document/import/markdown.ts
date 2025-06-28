@@ -1,14 +1,24 @@
 import z from 'zod';
 import { Client } from '@larksuiteoapi/node-sdk';
 import * as lark from '@larksuiteoapi/node-sdk';
+import { convertDescriptionToString, McpToolDescription } from '../../types';
 
 import { addMermaidBlockMarkers } from '../../../utils/markdown-processor';
+
+const description: McpToolDescription = {
+  shortDescription: '飞书-云文档-文档-导入Markdown文件为新文档',
+  bestFor: 'Markdown内容转换为飞书文档，支持Mermaid图表、标题、列表、代码块等',
+  notRecommendedFor: '复杂的HTML内容、非标准Markdown格式',
+  promptExample: '将这个Markdown内容导入为新的飞书文档',
+  usageExample: 'docx_markdown_import({markdown: "# 标题\\n\\n内容", file_name: "我的文档"})',
+  returns: '导入任务的执行结果和新文档信息'
+};
 
 export const docxMarkdownImport = {
   project: 'docx',
   name: 'docx_markdown_import',
   accessTokens: ['user', 'tenant'],
-  description: '[飞书/Lark] - 云文档-文档 - 导入markdown',
+  description: convertDescriptionToString(description),
   schema: {
     markdown: z.string().describe('markdown内容'),
     file_name: z.string().describe('文件名').max(250).optional(),
