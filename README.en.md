@@ -275,3 +275,7 @@ Current tools use user access tokens for authentication, ensuring:
 ---
 
 **📝 Note**: Ensure all environment variables and Feishu application settings are properly configured before deployment. If you encounter issues, please check Feishu application permission configuration and redirect URL settings. 
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ztxtxwd/feishu-mcp-server&type=Date)](https://star-history.com/#ztxtxwd/feishu-mcp-server&Date)
