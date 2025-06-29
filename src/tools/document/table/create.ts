@@ -8,7 +8,7 @@ const description: McpToolDescription = {
   bestFor: '在文档中创建表格，单元格中可以插入任何类型的块（文本、图片、列表等）',
   notRecommendedFor: '修改现有表格（请使用patch工具）',
   promptExample: '创建一个2x3的表格，第一行作为表头',
-  usageExample: 'docx_table_create({document_id: "xxx", block_id: "parent_block", data: {children_id: ["table_id"], descendants: [table_structure]}})',
+  usageExample: '1x1表格示例：docx_table_create({document_id: "xxx", block_id: "parent_block", data: {children_id: ["table_id"], descendants: [{"block_id":"table_id_1","block_type":31,"table":{"property":{"row_size":1,"column_size":1}},"children":["table_cell1"]},{"block_id":"table_cell1","block_type":32,"table_cell":{},"children":["table_cell1_child1"]},{"block_id":"table_cell1_child1","block_type":什么类型的块都可以，详见docx_block_schema_get工具的返回值,"children":[]}]}})',
   returns: '新创建的表格块信息和结构'
 };
 

@@ -4,7 +4,7 @@ import { convertDescriptionToString, McpToolDescription } from '../../types';
 
 const description: McpToolDescription = {
   shortDescription: '飞书-云文档-文档-插入图片、视频、文件-辅助工具',
-  bestFor: '在文档中插入图片、视频或文件，提供完整的插入流程指导',
+  bestFor: '在文档中插入图片(svg、base64、url)、视频(url)、文件(url)，提供完整的插入流程指导',
   notRecommendedFor: '直接的文件上传（此工具只提供指导流程）',
   promptExample: '在文档中插入一张图片',
   usageExample: 'docx_image_or_video_or_file_create({type: "image"})',

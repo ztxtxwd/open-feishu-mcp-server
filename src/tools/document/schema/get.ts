@@ -5,7 +5,7 @@ import { convertDescriptionToString, McpToolDescription } from '../../types';
 const description: McpToolDescription = {
   shortDescription: '飞书-云文档-文档-块-获取块类型Schema-获取指定块类型的创建参数结构',
   bestFor: '了解任何块类型的详细参数结构和字段说明，为后续创建块做准备',
-  notRecommendedFor: '直接创建块（获取schema后请使用docx_block_create工具）',
+  notRecommendedFor: '创建图片、视频、文件块（获取schema后请使用docx_image_or_video_or_file_create工具）',
   promptExample: '获取文本块的创建参数结构',
   usageExample: 'docx_block_schema_get({block_type: "文本"})',
   returns: '指定块类型的完整JSON Schema，包含所有可用字段和选项说明'
