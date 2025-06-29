@@ -1,0 +1,1 @@
+export { docxV1BlockTypeSchemaGet } from './get';

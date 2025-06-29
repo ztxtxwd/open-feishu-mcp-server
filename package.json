@@ -14,7 +14,7 @@
     "lint:check": "eslint src/**/*.{ts,tsx} --max-warnings 0"
   },
   "dependencies": {
-    "@larksuiteoapi/node-sdk": "^1.48.0",
+    "@larksuiteoapi/node-sdk": "^1.50.1",
     "axios": "^1.10.0",
     "dotenv": "^16.5.0",
     "zod-to-json-schema": "^3.24.5"
@@ -22,7 +22,7 @@
   "devDependencies": {
     "@cloudflare/workers-oauth-provider": "^0.0.5",
     "@eslint/js": "^9.29.0",
-    "@modelcontextprotocol/sdk": "^1.12.3",
+    "@modelcontextprotocol/sdk": "^1.13.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
@@ -43,7 +43,7 @@
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3",
     "workers-mcp": "0.1.0-3",
-    "wrangler": "^4.20.0",
+    "wrangler": "^4.20.5",
     "zod": "^3.25.67"
   }
 }

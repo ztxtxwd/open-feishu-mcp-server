@@ -1,0 +1,1 @@
+export { docxImageOrVideoOrFileCreate } from './create';

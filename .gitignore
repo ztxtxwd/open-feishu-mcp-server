@@ -174,3 +174,4 @@ dist
 lark-openapi-mcp/
 .specstory/
 reports/
+.comate/
