@@ -123,15 +123,7 @@ export class MyMCP extends McpAgent<Props, Env> {
       docxV1BlockTypeSchemaGet.description,
       docxV1BlockTypeSchemaGet.schema,
       async (params) => {
-        try {
-          return await docxV1BlockTypeSchemaGet.customHandler(params);
-        } catch (error) {
-          console.error('docxV1BlockTypeSchemaGet 工具执行失败:', error);
-          return {
-            isError: true,
-            content: [{ type: 'text', text: `获取块类型 schema 失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-          };
-        }
+        return await docxV1BlockTypeSchemaGet.customHandler(params);
       },
     );
     this.server.tool(
@@ -139,31 +131,15 @@ export class MyMCP extends McpAgent<Props, Env> {
       docxV1DocumentBlockChildrenCreateSimple.description,
       docxV1DocumentBlockChildrenCreateSimple.schema,
       async (params) => {
-        try {
-          return await docxV1DocumentBlockChildrenCreateSimple.customHandler(client, params, {
-            userAccessToken: this.props.accessToken,
-            tool: docxV1DocumentBlockChildrenCreateSimple,
-          });
-        } catch (error) {
-          console.error('docxV1DocumentBlockChildrenCreateSimple 工具执行失败:', error);
-          return {
-            isError: true,
-            content: [{ type: 'text', text: `创建块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-          };
-        }
+        return await docxV1DocumentBlockChildrenCreateSimple.customHandler(client, params, {
+          userAccessToken: this.props.accessToken,
+          tool: docxV1DocumentBlockChildrenCreateSimple,
+        });
       },
     );
 
     this.server.tool(mediaUploadTool.name, mediaUploadTool.description, mediaUploadTool.schema, async (params) => {
-      try {
-        return await mediaUploadTool.customHandler(params, { userAccessToken: this.props.accessToken });
-      } catch (error) {
-        console.error('mediaUploadTool 工具执行失败:', error);
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `mediaUploadTool 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        };
-      }
+      return await mediaUploadTool.customHandler(params, { userAccessToken: this.props.accessToken });
     });
 
     this.server.tool(docxBlockPatch.name, docxBlockPatch.description, docxBlockPatch.inputSchema, async (params) => {
@@ -171,41 +147,17 @@ export class MyMCP extends McpAgent<Props, Env> {
     });
 
     this.server.tool(docxV1DocumentTableCreate.name, docxV1DocumentTableCreate.description, docxV1DocumentTableCreate.schema, async (params) => {
-      try {
-        return await docxV1DocumentTableCreate.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxV1DocumentTableCreate });
-      } catch (error) {
-        console.error('docxV1DocumentTableCreate 工具执行失败:', error);
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `docxV1DocumentTableCreate 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        };
-      }
+      return await docxV1DocumentTableCreate.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxV1DocumentTableCreate });
     });
 
     this.server.tool(docxImageOrVideoOrFileCreate.name, docxImageOrVideoOrFileCreate.description, docxImageOrVideoOrFileCreate.schema, docxImageOrVideoOrFileCreate.customHandler);
 
     this.server.tool(docxMarkdownImport.name, docxMarkdownImport.description, docxMarkdownImport.schema, async (params) => {
-      try {
-        return await docxMarkdownImport.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownImport });
-      } catch (error) {
-        console.error('docxMarkdownImport 工具执行失败:', error);
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `docxMarkdownImport 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        };
-      }
+      return await docxMarkdownImport.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownImport });
     });
 
     this.server.tool(docxBlockBatchDelete.name, docxBlockBatchDelete.description, docxBlockBatchDelete.schema, async (params) => {
-      try {
-        return await docxBlockBatchDelete.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockBatchDelete });
-      } catch (error) {
-        console.error('docxBlockBatchDelete 工具执行失败:', error);
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `docxBlockBatchDelete 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-        };
-      }
+      return await docxBlockBatchDelete.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockBatchDelete });
     });
   }
 }
