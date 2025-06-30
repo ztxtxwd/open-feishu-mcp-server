@@ -37,7 +37,10 @@ export const blockTreeTool = {
   customHandler: async (params: BlockTreeParams, client?: Client, userAccessToken?: string) => {
     try {
       if (!client) {
-        throw new Error('Client not provided');
+        return {
+          isError: true,
+          content: [{ type: 'text' as const, text: 'Client not provided' }],
+        };
       }
 
       // 收集所有块
