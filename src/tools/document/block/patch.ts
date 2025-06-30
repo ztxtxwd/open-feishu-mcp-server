@@ -147,8 +147,8 @@ export const docxBlockPatch = {
       //     style: z.any().describe('文本样式'),
       //     fields: z.array(z.number().min(1).max(7).describe('1：修改 Block 的对齐方式 2：Todo 的完成状态。支持对 Todo 和 Task 块进行修改 3：文本的折叠状态。支持对 Heading1~9、和有子块的 Text、Ordered、Bullet、Todo 和 Task 块进行修改 4：代码块语言类型。仅支持对 Code 块进行修改 5：代码块是否自动换行。支持对 Code 块进行修改 6：块背景色 7：首行缩进级别。仅支持对 Text 块进行修改。')).describe('应更新的字段，必须至少指定一个字段。'),
       //   }).describe('更新文本元素及样式').optional(),
-    }),
-    path: z.object({ document_id: z.string().describe('文档ID'), block_id: z.string().describe('块ID') }),
+    }).describe('更新块内容'),
+    path: z.object({ document_id: z.string().describe('文档ID'), block_id: z.string().describe('块ID') }).describe('路径'),
   },
   customHandler: async (params: any, client: Client, userAccessToken: string) => {
     try {
