@@ -14,13 +14,68 @@ export const docxBlockPatch = {
   description: convertDescriptionToString(description),
   inputSchema: {
     data: z.object({
-      update_text_elements: z.object({
-        elements: z.any().describe('文本元素'),
-      }).describe('更新文本元素').optional(),
-      update_text_style: z.object({
-        style: z.any().describe('文本样式，全部schema可以通过docx_block_schema_get获取'),
-        fields: z.array(z.number().min(1).max(7).describe('1：修改 Block 的对齐方式 2：Todo 的完成状态。支持对 Todo 和 Task 块进行修改 3：文本的折叠状态。支持对 Heading1~9、和有子块的 Text、Ordered、Bullet、Todo 和 Task 块进行修改 4：代码块语言类型。仅支持对 Code 块进行修改 5：代码块是否自动换行。支持对 Code 块进行修改 6：块背景色 7：首行缩进级别。仅支持对 Text 块进行修改。')).describe('应更新的字段，必须至少指定一个字段。'),
-      }).describe('更新文本样式').optional(),
+      update_text_elements: z
+        .object({
+          elements: z.any().describe('文本元素'),
+        })
+        .describe('更新文本元素')
+        .optional(),
+      update_text_style: z
+        .object({
+          style: z
+            .object({
+              align: z.number().describe('对齐方式 Options:1(Left 居左排版),2(Center 居中排版),3(Right 居右排版)').optional(),
+              done: z.boolean().describe('todo 的完成状态').optional(),
+              folded: z.boolean().describe('文本的折叠状态').optional(),
+              language: z
+                .number()
+                .describe(
+                  '代码块语言 Options:1(PlainText),2(ABAP),3(Ada),4(Apache),5(Apex),6(AssemblyLanguage Assembly Language),7(Bash),8(CSharp),9(CPlusPlus C++),10(C),11(COBOL),12(CSS),13(CoffeeScript),14(D),15(Dart),16(Delphi),17(Django),18(Dockerfile),19(Erlang),20(Fortran),21(FoxPro),22(Go),23(Groovy),24(HTML),25(HTMLBars),26(HTTP),27(Haskell),28(JSON),29(Java),30(JavaScript),31(Julia),32(Kotlin),33(LateX),34(Lisp),35(Logo),36(Lua),37(MATLAB),38(Makefile),39(Markdown),40(Nginx),41(ObjectiveC Objective-C),42(OpenEdgeABL),43(PHP),44(Perl),45(PostScript),46(PowerShell Power Shell),47(Prolog),48(ProtoBuf),49(Python),50(R),51(RPG),52(Ruby),53(Rust),54(SAS),55(SCSS),56(SQL),57(Scala),58(Scheme),59(Scratch),60(Shell),61(Swift),62(Thrift),63(TypeScript),64(VBScript),65(VisualBasic Visual Basic),66(XML),67(YAML),68(CMake),69(Diff),70(Gherkin),71(GraphQL),72(OpenGLShadingLanguage OpenGL Shading Language),73(Properties),74(Solidity),75(TOML)',
+                )
+                .optional(),
+              wrap: z.boolean().describe('代码块是否自动换行').optional(),
+              background_color: z
+                .enum([
+                  'LightGrayBackground',
+                  'LightRedBackground',
+                  'LightOrangeBackground',
+                  'LightYellowBackground',
+                  'LightGreenBackground',
+                  'LightBlueBackground',
+                  'LightPurpleBackground',
+                  'PaleGrayBackground',
+                  'DarkGrayBackground',
+                  'DarkRedBackground',
+                  'DarkOrangeBackground',
+                  'DarkYellowBackground',
+                  'DarkGreenBackground',
+                  'DarkBlueBackground',
+                  'DarkPurpleBackground',
+                ])
+                .describe(
+                  '块背景色 Options:LightGrayBackground(浅灰色),LightRedBackground(浅红色),LightOrangeBackground(浅橙色),LightYellowBackground(浅黄色),LightGreenBackground(浅绿色),LightBlueBackground(浅蓝色),LightPurpleBackground(浅紫色),PaleGrayBackground(淡灰色),DarkGrayBackground(深灰色),DarkRedBackground(深红色),DarkOrangeBackground(深橙色),DarkYellowBackground(深黄色),DarkGreenBackground(深绿色),DarkBlueBackground(深蓝色),DarkPurpleBackground(深紫色)',
+                )
+                .optional(),
+              indentation_level: z
+                .enum(['NoIndent', 'OneLevelIndent'])
+                .describe('首行缩进级别 Options:NoIndent(无缩进),OneLevelIndent(一级缩进)')
+                .optional(),
+            })
+            .describe('文本样式'),
+          fields: z
+            .array(
+              z
+                .number()
+                .min(1)
+                .max(7)
+                .describe(
+                  '1：修改 Block 的对齐方式 2：Todo 的完成状态。支持对 Todo 和 Task 块进行修改 3：文本的折叠状态。支持对 Heading1~9、和有子块的 Text、Ordered、Bullet、Todo 和 Task 块进行修改 4：代码块语言类型。仅支持对 Code 块进行修改 5：代码块是否自动换行。支持对 Code 块进行修改 6：块背景色 7：首行缩进级别。仅支持对 Text 块进行修改。',
+                ),
+            )
+            .describe('应更新的字段，必须至少指定一个字段。'),
+        })
+        .describe('更新文本样式')
+        .optional(),
       update_table_property: z
         .object({
           column_width: z.number().describe('表格列宽'),
@@ -85,13 +140,13 @@ export const docxBlockPatch = {
         .optional(),
       replace_file: z
         .object({ token: z.string().describe('附件 token') })
-            .describe('替换附件')
+        .describe('替换附件')
         .optional(),
-    //   update_text: z.object({
-    //     elements: z.any().describe('文本元素'),
-    //     style: z.any().describe('文本样式'),
-    //     fields: z.array(z.number().min(1).max(7).describe('1：修改 Block 的对齐方式 2：Todo 的完成状态。支持对 Todo 和 Task 块进行修改 3：文本的折叠状态。支持对 Heading1~9、和有子块的 Text、Ordered、Bullet、Todo 和 Task 块进行修改 4：代码块语言类型。仅支持对 Code 块进行修改 5：代码块是否自动换行。支持对 Code 块进行修改 6：块背景色 7：首行缩进级别。仅支持对 Text 块进行修改。')).describe('应更新的字段，必须至少指定一个字段。'),
-    //   }).describe('更新文本元素及样式').optional(),
+      //   update_text: z.object({
+      //     elements: z.any().describe('文本元素'),
+      //     style: z.any().describe('文本样式'),
+      //     fields: z.array(z.number().min(1).max(7).describe('1：修改 Block 的对齐方式 2：Todo 的完成状态。支持对 Todo 和 Task 块进行修改 3：文本的折叠状态。支持对 Heading1~9、和有子块的 Text、Ordered、Bullet、Todo 和 Task 块进行修改 4：代码块语言类型。仅支持对 Code 块进行修改 5：代码块是否自动换行。支持对 Code 块进行修改 6：块背景色 7：首行缩进级别。仅支持对 Text 块进行修改。')).describe('应更新的字段，必须至少指定一个字段。'),
+      //   }).describe('更新文本元素及样式').optional(),
     }),
     path: z.object({ document_id: z.string().describe('文档ID'), block_id: z.string().describe('块ID') }),
   },
