@@ -30,7 +30,7 @@ export const docxMarkdownImport = {
       // 处理 markdown 内容，为 mermaid 代码块添加标记
       let processedMarkdown = addMermaidBlockMarkers(params.markdown);
       // 去除markdown 内容开头的一级标题
-      processedMarkdown = processedMarkdown.replace(/^# /, '');
+      processedMarkdown = processedMarkdown.replace(/^# .*\n?/, '');
       // 构造 FormData
       const formData = new FormData();
       // 生成随机文件名
