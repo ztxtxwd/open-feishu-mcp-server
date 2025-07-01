@@ -164,3 +164,12 @@ export const mediaUploadTool = {
     }
   },
 };
+
+// 导出评论相关工具
+export { 
+  driveCommentCreate,
+  driveCommentList,
+  driveCommentPatch,
+  driveCommentReplyCreate,
+  driveCommentReplyList
+} from './comment';
