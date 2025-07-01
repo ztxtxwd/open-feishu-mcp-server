@@ -4,5 +4,5 @@
 export { driveCommentCreate } from './create';
 export { driveCommentList } from './list';
 export { driveCommentPatch } from './patch';
-export { driveCommentReplyCreate } from './reply-create';
-export { driveCommentReplyList } from './reply-list';
+export { driveCommentBatch } from './batch';
+export { driveCommentGet } from './get';
