@@ -194,4 +194,7 @@ export const larkDocxBuiltinImportTool: McpTool = {
   },
 };
 
-export const docxBuiltinTools = [larkDocxBuiltinSearchTool, larkDocxBuiltinImportTool];
+export const docxBuiltinTools = [
+  larkDocxBuiltinSearchTool, 
+  larkDocxBuiltinImportTool,
+];

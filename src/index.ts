@@ -11,6 +11,8 @@ import { RecallTool } from './mcp-tool/document-tool/recall';
 import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple, docxV1DocumentTableCreate } from './tools/document';
 import { mediaUploadTool } from './tools/drive';
 import { z } from 'zod';
+import { driveCommentBatch, driveCommentList,driveCommentPatch,driveCommentCreate,driveCommentGet } from './tools/drive/comment';
+import { driveReplyList, driveReplyUpdate, driveReplyDelete } from './tools/drive/reply';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -158,6 +160,38 @@ export class MyMCP extends McpAgent<Props, Env> {
 
     this.server.tool(docxBlockBatchDelete.name, docxBlockBatchDelete.description, docxBlockBatchDelete.schema, async (params) => {
       return await docxBlockBatchDelete.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockBatchDelete });
+    });
+
+    this.server.tool(driveCommentList.name, driveCommentList.description, driveCommentList.inputSchema, async (params) => {
+      return await driveCommentList.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(driveCommentBatch.name, driveCommentBatch.description, driveCommentBatch.inputSchema, async (params) => {
+      return await driveCommentBatch.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(driveCommentPatch.name, driveCommentPatch.description, driveCommentPatch.inputSchema, async (params) => {
+      return await driveCommentPatch.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(driveCommentCreate.name, driveCommentCreate.description, driveCommentCreate.inputSchema, async (params) => {
+      return await driveCommentCreate.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(driveCommentGet.name, driveCommentGet.description, driveCommentGet.inputSchema, async (params) => {
+      return await driveCommentGet.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(driveReplyList.name, driveReplyList.description, driveReplyList.inputSchema, async (params) => {
+      return await driveReplyList.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(driveReplyUpdate.name, driveReplyUpdate.description, driveReplyUpdate.inputSchema, async (params) => {
+      return await driveReplyUpdate.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(driveReplyDelete.name, driveReplyDelete.description, driveReplyDelete.inputSchema, async (params) => {
+      return await driveReplyDelete.customHandler(params, client, this.props.accessToken);
     });
   }
 }
