@@ -1,11 +1,66 @@
 import type { AuthRequest, OAuthHelpers } from '@cloudflare/workers-oauth-provider';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { env } from 'cloudflare:workers';
 
 import { fetchUpstreamAuthToken, getUpstreamAuthorizeUrl, Props } from './utils';
 import { clientIdAlreadyApproved, parseRedirectApproval, renderApprovalDialog } from './workers-oauth-utils';
+import { HttpStatusCode } from 'axios';
 
 const app = new Hono<{ Bindings: Env & { OAUTH_PROVIDER: OAuthHelpers } }>();
+
+// Add CORS middleware for well-known endpoints
+app.use('/.well-known/*', cors({
+	origin: '*',
+	allowMethods: ['GET', 'OPTIONS'],
+	allowHeaders: ['Content-Type', 'Authorization'],
+	maxAge: 86400, // 24 hours
+}));
+
+// OAuth 2.0 Protected Resource Metadata
+app.get('/.well-known/oauth-protected-resource', async (c) => {
+	const baseUrl = new URL(c.req.url).origin;
+	
+	return c.json({
+		// Required fields
+		resource: baseUrl,
+		authorization_servers: [`${baseUrl}/.well-known/oauth-authorization-server`],
+		
+		// Optional fields
+		resource_documentation: `${baseUrl}/docs`,
+		resource_policy_documentation: `${baseUrl}/privacy-policy`,
+		revocation_endpoint: `${baseUrl}/revoke`,
+		revocation_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post"],
+		introspection_endpoint: `${baseUrl}/introspect`,
+		introspection_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post"],
+		
+		// Scopes supported by this resource server
+		scopes_supported: [
+			"drive:drive",
+			"drive:file", 
+			"drive:file:upload",
+			"auth:user.id:read",
+			"offline_access",
+			"task:task:read",
+			"docs:document:import",
+			"docs:document.media:upload",
+			"docx:document",
+			"docx:document:readonly"
+		],
+		
+		// Bearer token usage
+		bearer_methods_supported: ["header", "body", "query"],
+		
+		// Additional metadata
+		service_documentation: `${baseUrl}/api-docs`,
+		ui_locales_supported: ["zh-CN", "en-US"]
+	}, {
+		headers: {
+			'Content-Type': 'application/json',
+			'Cache-Control': 'public, max-age=3600'
+		}
+	});
+});
 
 app.get('/authorize', async (c) => {
 	const oauthReqInfo = await c.env.OAUTH_PROVIDER.parseAuthRequest(c.req.raw);
