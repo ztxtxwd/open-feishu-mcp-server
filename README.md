@@ -278,4 +278,4 @@ npx @modelcontextprotocol/inspector@latest
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ztxtxwd/feishu-mcp-server&type=Date)](https://star-history.com/#ztxtxwd/feishu-mcp-server&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=ztxtxwd/feishu-mcp-server&type=Date)](https://star-history.com/#ztxtxwd/open-feishu-mcp-server&Date)
