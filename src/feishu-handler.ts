@@ -13,7 +13,7 @@ const app = new Hono<{ Bindings: Env & { OAUTH_PROVIDER: OAuthHelpers } }>();
 app.use('/.well-known/*', cors({
 	origin: '*',
 	allowMethods: ['GET', 'OPTIONS'],
-	allowHeaders: ['Content-Type', 'Authorization'],
+	allowHeaders: ['Content-Type', 'Authorization','mcp-protocol-version'],
 	maxAge: 86400, // 24 hours
 }));
 
