@@ -20,7 +20,7 @@ export const docxMarkdownImport = {
   accessTokens: ['user', 'tenant'],
   description: convertDescriptionToString(description),
   schema: {
-    markdown: z.string().describe('markdown内容'),
+    markdown: z.string().nonempty().describe('markdown内容'),
     file_name: z.string().describe('文件名').max(250).optional(),
   },
   customHandler: async (client:Client, params:any, options:any) => {
