@@ -1,7 +1,7 @@
 /**
  * 云文档评论列表获取工具
  */
-import { z } from 'zod'
+import { any, z } from 'zod'
 import { Client } from '@larksuiteoapi/node-sdk'
 import * as lark from '@larksuiteoapi/node-sdk'
 import { McpToolDescription, convertDescriptionToString } from '../../types'
@@ -19,7 +19,7 @@ const ListCommentsSchema = {
   file_type: z
     .enum(['doc', 'docx', 'sheet', 'file', 'slides'])
     .describe('云文档类型：doc(旧版文档)，docx(新版文档)，sheet(电子表格)，file(文件)，slides(幻灯片)'),
-  is_whole: z.boolean().describe('是否获取全文评论').default(false),
+  is_whole: z.boolean().describe('是否只获取全文评论').default(false),
   is_solved: z.boolean().describe('是否只获取已解决的评论').default(false),
 }
 
@@ -44,7 +44,9 @@ export const driveCommentList = {
         }
       }
 
-      let items = []
+      let data: { items: any[] } = {
+        items:[]
+      }
       for await (const item of await client.drive.v1.fileComment.listWithIterator(
         {
           path: {
@@ -58,14 +60,17 @@ export const driveCommentList = {
         },
         userAccessToken ? lark.withUserAccessToken(userAccessToken) : undefined,
       )) {
-        items.push(item)
+        if(item?.items){
+          data.items = [...data.items, ...item.items]
+        }
+        
       }
 
       return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(items),
+            text: JSON.stringify(data),
           },
         ],
       }
