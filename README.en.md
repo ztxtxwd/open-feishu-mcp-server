@@ -137,7 +137,7 @@ Return to Feishu application settings:
 #### Start Local Server
 
 ```bash
-wrangler dev
+npm run dev
 ```
 
 Server will run at `http://localhost:8788`.
