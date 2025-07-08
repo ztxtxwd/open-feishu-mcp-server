@@ -1,5 +1,5 @@
 [![MCP Badge](https://lobehub.com/badge/mcp/ztxtxwd-open-feishu-mcp-server)](https://lobehub.com/mcp/ztxtxwd-open-feishu-mcp-server)
-# Model Context Protocol (MCP) Server + Feishu OAuth
+# Feishu MCP Server
 
 [中文文档](README.md)
 
