@@ -137,7 +137,7 @@ wrangler deploy
 #### 启动本地服务器
 
 ```bash
-wrangler dev
+npm run dev
 ```
 
 服务器将在 `http://localhost:8788` 运行。
