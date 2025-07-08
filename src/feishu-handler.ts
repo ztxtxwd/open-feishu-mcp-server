@@ -101,7 +101,7 @@ async function redirectToFeishu(request: Request, oauthReqInfo: AuthRequest, hea
 			...headers,
 			location: getUpstreamAuthorizeUrl({
 				upstream_url: 'https://open.feishu.cn/open-apis/authen/v1/authorize',
-				scope: 'drive:drive drive:file drive:file:upload auth:user.id:read offline_access task:task:read docs:document:import docs:document.media:upload docx:document docx:document:readonly',
+				scope: 'wiki:wiki wiki:wiki:readonly wiki:node:read drive:drive drive:file drive:file:upload auth:user.id:read offline_access task:task:read docs:document:import docs:document.media:upload docx:document docx:document:readonly',
 				client_id: env.FEISHU_APP_ID,
 				redirect_uri: new URL('/callback', request.url).href,
 				state: btoa(JSON.stringify(oauthReqInfo)),

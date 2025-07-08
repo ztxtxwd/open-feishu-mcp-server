@@ -1,0 +1,1 @@
+export { wikiNodeInfoGet } from './node';

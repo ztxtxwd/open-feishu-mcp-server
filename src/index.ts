@@ -13,6 +13,7 @@ import { mediaUploadTool } from './tools/drive';
 import { z } from 'zod';
 import { driveCommentBatch, driveCommentList,driveCommentPatch,driveCommentCreate,driveCommentGet } from './tools/drive/comment';
 import { driveReplyList, driveReplyUpdate, driveReplyDelete } from './tools/drive/reply';
+import { wikiNodeInfoGet } from './tools/wiki/space';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -192,6 +193,10 @@ export class MyMCP extends McpAgent<Props, Env> {
 
     this.server.tool(driveReplyDelete.name, driveReplyDelete.description, driveReplyDelete.inputSchema, async (params) => {
       return await driveReplyDelete.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(wikiNodeInfoGet.name, wikiNodeInfoGet.description, wikiNodeInfoGet.inputSchema, async (params) => {
+      return await wikiNodeInfoGet.customHandler(params, client, this.props.accessToken);
     });
   }
 }
