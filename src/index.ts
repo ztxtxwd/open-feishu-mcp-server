@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { driveCommentBatch, driveCommentList,driveCommentPatch,driveCommentCreate,driveCommentGet } from './tools/drive/comment';
 import { driveReplyList, driveReplyUpdate, driveReplyDelete } from './tools/drive/reply';
 import { wikiNodeInfoGet } from './tools/wiki/space';
+import { sheetRangeRead, sheetInfoGet } from './tools/sheet';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -197,6 +198,14 @@ export class MyMCP extends McpAgent<Props, Env> {
 
     this.server.tool(wikiNodeInfoGet.name, wikiNodeInfoGet.description, wikiNodeInfoGet.inputSchema, async (params) => {
       return await wikiNodeInfoGet.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(sheetRangeRead.name, sheetRangeRead.description, sheetRangeRead.inputSchema, async (params) => {
+      return await sheetRangeRead.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(sheetInfoGet.name, sheetInfoGet.description, sheetInfoGet.inputSchema, async (params) => {
+      return await sheetInfoGet.customHandler(params, client, this.props.accessToken);
     });
   }
 }
