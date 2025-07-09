@@ -64,7 +64,7 @@
 ```bash
 # 克隆仓库
 git clone <repository-url>
-cd my-mcp-server
+cd open-feishu-mcp-server
 
 # 安装依赖
 npm install
@@ -107,7 +107,7 @@ wrangler kv:namespace create "OAUTH_KV"
 #### 步骤 4: 部署服务器
 
 ```bash
-wrangler deploy
+npm run deploy
 ```
 
 部署完成后，记下您的实际 subdomain（会在部署日志中显示）。
