@@ -64,7 +64,7 @@ While Feishu officially released an MCP Server, this project has significant adv
 ```bash
 # Clone repository
 git clone <repository-url>
-cd my-mcp-server
+cd open-feishu-mcp-server
 
 # Install dependencies
 npm install
@@ -107,7 +107,7 @@ Update the KV namespace configuration in `wrangler.toml` with the KV ID obtained
 #### Step 4: Deploy Server
 
 ```bash
-wrangler deploy
+npm run deploy
 ```
 
 After deployment, note your actual subdomain (displayed in deployment logs).
