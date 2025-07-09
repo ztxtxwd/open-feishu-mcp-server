@@ -15,6 +15,7 @@ import { driveCommentBatch, driveCommentList,driveCommentPatch,driveCommentCreat
 import { driveReplyList, driveReplyUpdate, driveReplyDelete } from './tools/drive/reply';
 import { wikiNodeInfoGet } from './tools/wiki/space';
 import { sheetRangeRead, sheetInfoGet } from './tools/sheet';
+import { suiteSearch } from './tools/suite';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -206,6 +207,10 @@ export class MyMCP extends McpAgent<Props, Env> {
 
     this.server.tool(sheetInfoGet.name, sheetInfoGet.description, sheetInfoGet.inputSchema, async (params) => {
       return await sheetInfoGet.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(suiteSearch.name, suiteSearch.description, suiteSearch.inputSchema, async (params) => {
+      return await suiteSearch.customHandler(params, client, this.props.accessToken);
     });
   }
 }
