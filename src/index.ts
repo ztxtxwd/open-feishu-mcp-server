@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { driveCommentBatch, driveCommentList,driveCommentPatch,driveCommentCreate,driveCommentGet } from './tools/drive/comment';
 import { driveReplyList, driveReplyUpdate, driveReplyDelete } from './tools/drive/reply';
 import { wikiNodeInfoGet } from './tools/wiki/space';
-import { sheetRangeRead, sheetInfoGet } from './tools/sheet';
+import { sheetRangeRead, sheetInfoGet,sheetPatch } from './tools/sheet';
 import { suiteSearch } from './tools/suite';
 import { userInfo } from './tools/authen/user_info';
 
@@ -189,6 +189,10 @@ export class MyMCP extends McpAgent<Props, Env> {
 
     this.server.tool(suiteSearch.name, suiteSearch.description, suiteSearch.inputSchema, async (params) => {
       return await suiteSearch.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(sheetPatch.name, sheetPatch.description, sheetPatch.inputSchema, async (params) => {
+      return await sheetPatch.customHandler(params, client, this.props.accessToken);
     });
   }
 }

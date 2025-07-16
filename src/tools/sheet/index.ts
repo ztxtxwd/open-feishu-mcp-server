@@ -45,3 +45,4 @@ export const sheetInfoGet = {
 }
 
 export { sheetRangeRead } from './range'
+export { sheetPatch } from './patch'
