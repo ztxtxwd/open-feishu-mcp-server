@@ -16,6 +16,9 @@ import { driveReplyList, driveReplyUpdate, driveReplyDelete } from './tools/driv
 import { wikiNodeInfoGet } from './tools/wiki/space';
 import { sheetRangeRead, sheetInfoGet } from './tools/sheet';
 import { suiteSearch } from './tools/suite';
+import { userInfo } from './tools/authen/user_info';
+
+import { GenTools } from './mcp-tool/tools/zh/gen-tools';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -39,34 +42,9 @@ export class MyMCP extends McpAgent<Props, Env> {
     // }))
 
     // Use the upstream access token to facilitate tools
-    this.server.tool('user_info', 'Get user info from Feishu', {}, async () => {
-      const response = await fetch('https://open.feishu.cn/open-apis/authen/v1/user_info', {
-        headers: {
-          Authorization: `Bearer ${this.props.accessToken}`,
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      });
-
-      if (!response.ok) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: 'Failed to fetch user info: ' + (await response.text()),
-            },
-          ],
-        };
-      }
-
-      const data = await response.json();
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(data),
-          },
-        ],
-      };
+    
+    this.server.tool(userInfo.name, userInfo.description, userInfo.inputSchema, async (params) => {
+      return await userInfo.customHandler(params, client, this.props.accessToken);
     });
 
     // for (const tool of BuiltinTools) {
@@ -87,7 +65,7 @@ export class MyMCP extends McpAgent<Props, Env> {
     // const tool = GenTools.find((tool) => tool.name === 'drive.v1.fileComment.list')
     // for (const tool of [...GenTools]) {
     //   if (tool && (tool.name.startsWith('drive.v12.') || tool.name.startsWith('docx.v1.document'))) {
-    //     this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
+    //     this.server.tool(tool.name, tool.description, tool.schema, (params: any) => {
     //       try {
     //         const handler = tool.customHandler || larkOapiHandler
     //         return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
