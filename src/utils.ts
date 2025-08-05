@@ -84,7 +84,6 @@ export async function fetchUpstreamAuthToken({
 			refresh_token: string;
 			expires_in: number;
 		};
-		console.log('data', data);
 		const accessToken = data.access_token;
 		const refreshToken = data.refresh_token;
 		const expiresIn = data.expires_in;
