@@ -126,7 +126,7 @@ app.get("/callback", async (c) => {
 	}
 
 	// Exchange the code for an access token
-	const [accessToken, refreshToken, errResponse] = await fetchUpstreamAuthToken({
+	const [accessToken, refreshToken, expiresIn, errResponse] = await fetchUpstreamAuthToken({
 		upstream_url: "https://open.feishu.cn/open-apis/authen/v2/oauth/token",
 		client_id: c.env.FEISHU_APP_ID,
 		client_secret: c.env.FEISHU_APP_SECRET,
@@ -172,7 +172,8 @@ app.get("/callback", async (c) => {
 			name: name || en_name,
 			email,
 			accessToken,
-			refreshToken
+			refreshToken,
+			expiresIn
 		} as Props,
 	});
 	return Response.redirect(redirectTo);

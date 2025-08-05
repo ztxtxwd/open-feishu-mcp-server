@@ -55,7 +55,7 @@ export async function fetchUpstreamAuthToken({
 	client_secret: string;
 	redirect_uri: string;
 	client_id: string;
-}): Promise<[string, string, null] | [null, Response]> {
+}): Promise<[string, string, number, null] | [null, Response]> {
 	if (!code) {
 		return [null, new Response("Missing code", { status: 400 })];
 	}
@@ -82,14 +82,17 @@ export async function fetchUpstreamAuthToken({
 		const data = await resp.json() as {
 			access_token: string;
 			refresh_token: string;
+			expires_in: number;
 		};
+		console.log('data', data);
 		const accessToken = data.access_token;
 		const refreshToken = data.refresh_token;
+		const expiresIn = data.expires_in;
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
 
-		return [accessToken, refreshToken, null];
+		return [accessToken, refreshToken, expiresIn, null];
 	} else {
 		// Original GitHub implementation
 		const resp = await fetch(upstream_url, {
@@ -105,10 +108,11 @@ export async function fetchUpstreamAuthToken({
 		const body = await resp.formData();
 		const accessToken = body.get("access_token") as string;
 		const refreshToken = body.get("refresh_token") as string;
+		const expiresIn = parseInt(body.get("expires_in") as string);
 		if (!accessToken) {
 			return [null, new Response("Missing access token", { status: 400 })];
 		}
-		return [accessToken, refreshToken, null];
+		return [accessToken, refreshToken, expiresIn, null];
 	}
 }
 

@@ -207,10 +207,11 @@ export default new OAuthProvider({
   tokenEndpoint: '/token',
   clientRegistrationEndpoint: '/register',
   tokenExchangeCallback: async (options) => {
-    // console.log('tokenExchangeCallback', options)
+    console.log('tokenExchangeCallback', options)
     if (options.grantType === 'authorization_code') {
       return {
         accessTokenProps: options.props,
+        accessTokenTTL: options.props.expiresIn,
       };
     }
     if (options.grantType === 'refresh_token') {
