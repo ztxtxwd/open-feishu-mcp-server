@@ -17,6 +17,7 @@ import { wikiNodeInfoGet } from './tools/wiki/space';
 import { sheetRangeRead, sheetInfoGet,sheetPatch, sheetRangeWrite } from './tools/sheet';
 import { suiteSearch } from './tools/suite';
 import { userInfo } from './tools/authen/user_info';
+import { docxMarkdownInsert } from './tools/document';
 
 import { GenTools } from './mcp-tool/tools/zh/gen-tools';
 
@@ -197,6 +198,10 @@ export class MyMCP extends McpAgent<Props, Env> {
 
     this.server.tool(sheetRangeWrite.name, sheetRangeWrite.description, sheetRangeWrite.inputSchema, async (params) => {
       return await sheetRangeWrite.customHandler(params, client, this.props.accessToken);
+    });
+
+    this.server.tool(docxMarkdownInsert.name, docxMarkdownInsert.description, docxMarkdownInsert.schema, async (params) => {
+      return await docxMarkdownInsert.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownInsert });
     });
   }
 }
