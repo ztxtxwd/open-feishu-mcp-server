@@ -8,7 +8,7 @@ import { FeishuHandler } from './feishu-handler';
 import { Props, refreshUpstreamAuthToken } from './utils';
 import { oapiHttpInstance } from './utils/http-instance';
 import { RecallTool } from './mcp-tool/document-tool/recall';
-import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple } from './tools/document';
+import { blockTreeTool, docxBlockBatchDelete, docxBlockPatch, docxImageOrVideoOrFileCreate, docxInsertImage, docxInsertFile, docxMarkdownImport, docxV1BlockTypeSchemaGet, docxV1DocumentBlockChildrenCreateSimple } from './tools/document';
 import { mediaUploadTool } from './tools/drive';
 import { z } from 'zod';
 import { driveCommentBatch, driveCommentList,driveCommentPatch,driveCommentCreate,driveCommentGet } from './tools/drive/comment';
@@ -131,6 +131,14 @@ export class MyMCP extends McpAgent<Props, Env> {
     });
 
     this.server.tool(docxImageOrVideoOrFileCreate.name, docxImageOrVideoOrFileCreate.description, docxImageOrVideoOrFileCreate.schema, docxImageOrVideoOrFileCreate.customHandler);
+
+    this.server.tool(docxInsertImage.name, docxInsertImage.description, docxInsertImage.schema, async (params) => {
+      return await docxInsertImage.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxInsertImage });
+    });
+
+    this.server.tool(docxInsertFile.name, docxInsertFile.description, docxInsertFile.schema, async (params) => {
+      return await docxInsertFile.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxInsertFile });
+    });
 
     this.server.tool(docxMarkdownImport.name, docxMarkdownImport.description, docxMarkdownImport.schema, async (params) => {
       return await docxMarkdownImport.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownImport });
