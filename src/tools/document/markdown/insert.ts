@@ -49,6 +49,7 @@ export const docxMarkdownInsert = {
                     ],
                 };
             }
+            console.log('转换后的结果', JSON.stringify(转换后的结果));
 
             // 根据first_level_block_ids调整blocks的顺序
             let blocks = 转换后的结果.blocks || [];
