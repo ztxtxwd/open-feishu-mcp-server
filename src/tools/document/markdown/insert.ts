@@ -2,8 +2,68 @@ import z from 'zod';
 import { Client } from '@larksuiteoapi/node-sdk';
 import * as lark from '@larksuiteoapi/node-sdk';
 import { convertDescriptionToString, McpToolDescription } from '../../types';
-
 import { addMermaidBlockMarkers } from '../../../utils/markdown-processor';
+
+/**
+ * 从 markdown 中提取图片信息
+ */
+function extractImagesFromMarkdown(markdown: string): Map<string, string> {
+    const imageMap = new Map<string, string>(); // key: alt text, value: url
+    const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+    let match;
+
+    while ((match = imageRegex.exec(markdown)) !== null) {
+        const alt = match[1];
+        const url = match[2];
+        imageMap.set(alt, url);
+    }
+
+    return imageMap;
+}
+
+/**
+ * 上传图片
+ */
+async function uploadImage(userAccessToken: string, blockId: string, imageUrl: string) {
+    try {
+        // 下载图片
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+            throw new Error(`下载图片失败: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+        const fileName = imageUrl.split('/').pop() || 'image.png';
+        const file = new File([blob], fileName);
+
+        // 上传图片
+        const formData = new FormData();
+        formData.append('file_name', fileName);
+        formData.append('parent_type', 'docx_image');
+        formData.append('parent_node', blockId);
+        formData.append('size', file.size.toString());
+        formData.append('file', file);
+
+        const uploadResp = await fetch('https://open.feishu.cn/open-apis/drive/v1/medias/upload_all', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${userAccessToken}`
+            },
+            body: formData
+        });
+
+        const uploadResult = await uploadResp.json() as any;
+
+        if (!uploadResp.ok || !uploadResult.data?.file_token) {
+            throw new Error(`上传图片失败: ${JSON.stringify(uploadResult)}`);
+        }
+
+        return uploadResult.data.file_token;
+    } catch (error) {
+        console.error(`上传图片失败 (${imageUrl}):`, error);
+        return null;
+    }
+}
 
 const description: McpToolDescription = {
     shortDescription: '飞书-云文档-文档-插入Markdown内容',
@@ -28,6 +88,9 @@ export const docxMarkdownInsert = {
     customHandler: async (client: Client, params: any, options: any) => {
         try {
             const { userAccessToken } = options || {};
+
+            // 步骤1: 从 markdown 中提取图片信息
+            const imageMap = extractImagesFromMarkdown(params.markdown);
 
             // 处理 markdown 内容，为 mermaid 代码块添加标记
             let processedMarkdown = addMermaidBlockMarkers(params.markdown);
@@ -73,7 +136,8 @@ export const docxMarkdownInsert = {
                     newBlocks.push(block);
                 }
             }
-            // 使用创建嵌套块接口
+
+            // 步骤2: 使用创建嵌套块接口
             const 创建嵌套块响应 = await client.docx.v1.documentBlockDescendant.create({
                 path: {
                     document_id: params.document_id,
@@ -85,6 +149,7 @@ export const docxMarkdownInsert = {
                     descendants: newBlocks,
                 },
             }, lark.withUserAccessToken(userAccessToken));
+
             if (创建嵌套块响应.code !== 0) {
                 return {
                     isError: true,
@@ -92,13 +157,93 @@ export const docxMarkdownInsert = {
                         { type: 'text' as const, text: `插入Markdown内容请求失败: ${JSON.stringify(创建嵌套块响应)}` },
                     ],
                 };
-            }else{
-                return {
-                    content: [
-                        { type: 'text' as const, text: `插入Markdown内容请求成功: ${JSON.stringify(创建嵌套块响应)}` },
-                    ],
-                };
             }
+
+            // 步骤3: 找出所有图片块并上传图片
+            const imageBlocks: Array<{ block_id: string; caption?: string }> = [];
+
+            // 递归查找所有图片块
+            function findImageBlocks(blockList: any[]) {
+                for (const block of blockList) {
+                    if (block.block_type === 27 && block.image) {
+                        // 图片块，获取 caption 作为匹配键
+                        const caption = block.image.caption || '';
+                        imageBlocks.push({
+                            block_id: block.block_id,
+                            caption
+                        });
+                    }
+                    // 递归查找子块
+                    if (block.children && Array.isArray(block.children)) {
+                        findImageBlocks(block.children);
+                    }
+                }
+            }
+
+            findImageBlocks(newBlocks);
+
+            // 步骤4: 为每个图片块上传图片并更新块
+            const uploadResults = [];
+            for (const imageBlock of imageBlocks) {
+                // 从 imageMap 中查找对应的 URL
+                const imageUrl = imageMap.get(imageBlock.caption || '');
+
+                if (!imageUrl) {
+                    console.warn(`未找到图片 URL: ${imageBlock.caption}`);
+                    continue;
+                }
+
+                // 上传图片
+                const fileToken = await uploadImage(userAccessToken, imageBlock.block_id, imageUrl);
+
+                if (!fileToken) {
+                    console.warn(`图片上传失败: ${imageUrl}`);
+                    uploadResults.push({
+                        block_id: imageBlock.block_id,
+                        url: imageUrl,
+                        success: false
+                    });
+                    continue;
+                }
+
+                // 更新图片块
+                try {
+                    await client.docx.v1.documentBlock.patch({
+                        path: {
+                            document_id: params.document_id,
+                            block_id: imageBlock.block_id
+                        },
+                        data: {
+                            replace_image: { token: fileToken }
+                        }
+                    }, lark.withUserAccessToken(userAccessToken));
+
+                    uploadResults.push({
+                        block_id: imageBlock.block_id,
+                        url: imageUrl,
+                        file_token: fileToken,
+                        success: true
+                    });
+                } catch (error) {
+                    console.error(`更新图片块失败 (${imageBlock.block_id}):`, error);
+                    uploadResults.push({
+                        block_id: imageBlock.block_id,
+                        url: imageUrl,
+                        file_token: fileToken,
+                        success: false,
+                        error: error instanceof Error ? error.message : '未知错误'
+                    });
+                }
+            }
+
+            return {
+                content: [
+                    {
+                        type: 'text' as const,
+                        text: `插入Markdown内容成功！\n创建响应: ${JSON.stringify(创建嵌套块响应)}\n图片上传结果: ${JSON.stringify(uploadResults, null, 2)}`
+                    },
+                ],
+            };
         } catch (error) {
             return {
                 isError: true,
