@@ -52,6 +52,13 @@ export const docxMarkdownInsert = {
 
             // 根据first_level_block_ids调整blocks的顺序
             let blocks = 转换后的结果.blocks || [];
+            // 去除blocks中有table属性的block中的merge_info属性
+            blocks = blocks.map((block: any) => {
+                if (block.block_type === 31) {
+                    block.table.property.merge_info = undefined;
+                }
+                return block;
+            });
             const first_level_block_ids = 转换后的结果.first_level_block_ids || [];
             const newBlocks = [];
             for (const blockId of first_level_block_ids) {
