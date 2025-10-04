@@ -91,7 +91,7 @@ export const docxMarkdownInsert = {
 
             // 步骤1: 从 markdown 中提取图片信息
             const imageMap = extractImagesFromMarkdown(params.markdown);
-
+            console.log('imageMap', Array.from(imageMap.entries()));
             // 处理 markdown 内容，为 mermaid 代码块添加标记
             let processedMarkdown = addMermaidBlockMarkers(params.markdown);
             // 去除markdown 内容开头的一级标题
@@ -102,7 +102,6 @@ export const docxMarkdownInsert = {
                     content: processedMarkdown,
                 },
             }, lark.withUserAccessToken(userAccessToken));
-
             const 转换后的结果 = response.data;
             if (!转换后的结果) {
                 return {
@@ -181,7 +180,6 @@ export const docxMarkdownInsert = {
             }
 
             findImageBlocks(newBlocks);
-
             // 步骤4: 为每个图片块上传图片并更新块
             const uploadResults = [];
             for (const imageBlock of imageBlocks) {
