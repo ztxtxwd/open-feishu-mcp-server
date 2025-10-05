@@ -154,7 +154,9 @@ export const docxMarkdownInsert = {
             const tempToRealBlockId = new Map<string, string>();
             if (创建嵌套块响应.data?.block_id_relations) {
                 for (const relation of 创建嵌套块响应.data.block_id_relations) {
-                    tempToRealBlockId.set(relation.temporary_block_id, relation.block_id);
+                    if (relation.temporary_block_id && relation.block_id) {
+                        tempToRealBlockId.set(relation.temporary_block_id, relation.block_id);
+                    }
                 }
             }
             console.log('块ID映射', Array.from(tempToRealBlockId.entries()));
