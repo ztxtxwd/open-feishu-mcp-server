@@ -150,23 +150,56 @@ export const docxBlockPatch = {
     }).describe('更新块内容'),
     path: z.object({ document_id: z.string().describe('文档ID'), block_id: z.string().describe('块ID') }).describe('路径'),
   },
-  customHandler: async (params: any, client: Client, userAccessToken: string) => {
-    try {
-      const result = await client.docx.v1.documentBlock.patch(params, lark.withUserAccessToken(userAccessToken))
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(result.data),
-          },
-        ],
+  customHandler: (() => {
+    // 速率限制器：3次/秒
+    const timestamps: number[] = []
+    const RATE_LIMIT = 3
+    const WINDOW_MS = 1000
+
+    const checkRateLimit = async () => {
+      const now = Date.now()
+      // 清理超过时间窗口的时间戳
+      while (timestamps.length > 0 && timestamps[0] < now - WINDOW_MS) {
+        timestamps.shift()
       }
-    } catch (error) {
-      console.error('docxBlockPatch 工具执行失败:', error)
-      return {
-        isError: true,
-        content: [{ type: 'text', text: `docxBlockPatch 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+
+      if (timestamps.length < RATE_LIMIT) {
+        timestamps.push(now)
+        return
+      }
+
+      // 需要等待直到可以执行
+      const oldestTimestamp = timestamps[0]
+      const waitTime = oldestTimestamp + WINDOW_MS - now
+      if (waitTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, waitTime))
+        // 递归检查是否可以执行
+        return checkRateLimit()
+      }
+      timestamps.push(now)
+    }
+
+    return async (params: any, client: Client, userAccessToken: string) => {
+      try {
+        // 执行速率限制检查
+        await checkRateLimit()
+
+        const result = await client.docx.v1.documentBlock.patch(params, lark.withUserAccessToken(userAccessToken))
+        return {
+          content: [
+            {
+              type: 'text' as const,
+              text: JSON.stringify(result.data),
+            },
+          ],
+        }
+      } catch (error) {
+        console.error('docxBlockPatch 工具执行失败:', error)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `docxBlockPatch 工具执行失败: ${error instanceof Error ? error.message : '未知错误'}` }],
+        }
       }
     }
-  },
+  })(),
 }
