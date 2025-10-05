@@ -5,23 +5,6 @@ import { convertDescriptionToString, McpToolDescription } from '../../types';
 import { addMermaidBlockMarkers } from '../../../utils/markdown-processor';
 
 /**
- * 从 markdown 中提取图片信息
- */
-function extractImagesFromMarkdown(markdown: string): Map<string, string> {
-    const imageMap = new Map<string, string>(); // key: alt text, value: url
-    const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
-    let match;
-
-    while ((match = imageRegex.exec(markdown)) !== null) {
-        const alt = match[1];
-        const url = match[2];
-        imageMap.set(alt, url);
-    }
-
-    return imageMap;
-}
-
-/**
  * 上传图片
  */
 async function uploadImage(userAccessToken: string, blockId: string, imageUrl: string) {
@@ -89,19 +72,19 @@ export const docxMarkdownInsert = {
         try {
             const { userAccessToken } = options || {};
 
-            // 步骤1: 从 markdown 中提取图片信息
-            const imageMap = extractImagesFromMarkdown(params.markdown);
-            console.log('imageMap', Array.from(imageMap.entries()));
             // 处理 markdown 内容，为 mermaid 代码块添加标记
             let processedMarkdown = addMermaidBlockMarkers(params.markdown);
             // 去除markdown 内容开头的一级标题
             processedMarkdown = processedMarkdown.replace(/^# .*\n?/, '');
+
+            // 步骤1: 转换 markdown 为块结构
             const response = await client.docx.v1.document.convert({
                 data: {
                     content_type: 'markdown',
                     content: processedMarkdown,
                 },
             }, lark.withUserAccessToken(userAccessToken));
+
             const 转换后的结果 = response.data;
             if (!转换后的结果) {
                 return {
@@ -112,6 +95,15 @@ export const docxMarkdownInsert = {
                 };
             }
             console.log('转换后的结果', JSON.stringify(转换后的结果));
+
+            // 步骤2: 提取图片块与 URL 的映射关系 (temporary_block_id -> image_url)
+            const blockIdToImageUrls = new Map<string, string>();
+            if (转换后的结果.block_id_to_image_urls) {
+                for (const item of 转换后的结果.block_id_to_image_urls) {
+                    blockIdToImageUrls.set(item.block_id, item.image_url);
+                }
+            }
+            console.log('图片块映射', Array.from(blockIdToImageUrls.entries()));
 
             // 根据first_level_block_ids调整blocks的顺序
             let blocks = 转换后的结果.blocks || [];
@@ -136,7 +128,7 @@ export const docxMarkdownInsert = {
                 }
             }
 
-            // 步骤2: 使用创建嵌套块接口
+            // 步骤3: 使用创建嵌套块接口
             const 创建嵌套块响应 = await client.docx.v1.documentBlockDescendant.create({
                 path: {
                     document_id: params.document_id,
@@ -158,48 +150,43 @@ export const docxMarkdownInsert = {
                 };
             }
 
-            // 步骤3: 找出所有图片块并上传图片
-            const imageBlocks: Array<{ block_id: string; caption?: string }> = [];
-
-            // 递归查找所有图片块
-            function findImageBlocks(blockList: any[]) {
-                for (const block of blockList) {
-                    if (block.block_type === 27 && block.image) {
-                        // 图片块，获取 caption 作为匹配键
-                        const caption = block.image.caption || '';
-                        imageBlocks.push({
-                            block_id: block.block_id,
-                            caption
-                        });
-                    }
-                    // 递归查找子块
-                    if (block.children && Array.isArray(block.children)) {
-                        findImageBlocks(block.children);
-                    }
+            // 步骤4: 建立 temporary_block_id -> real_block_id 的映射
+            const tempToRealBlockId = new Map<string, string>();
+            if (创建嵌套块响应.data?.block_id_relations) {
+                for (const relation of 创建嵌套块响应.data.block_id_relations) {
+                    tempToRealBlockId.set(relation.temporary_block_id, relation.block_id);
                 }
             }
+            console.log('块ID映射', Array.from(tempToRealBlockId.entries()));
 
-            findImageBlocks(newBlocks);
-            // 步骤4: 为每个图片块上传图片并更新块
+            // 步骤5: 为每个图片块上传图片并更新块
             const uploadResults = [];
-            for (const imageBlock of imageBlocks) {
-                // 从 imageMap 中查找对应的 URL
-                const imageUrl = imageMap.get(imageBlock.caption || '');
+            for (const [tempBlockId, imageUrl] of blockIdToImageUrls.entries()) {
+                // 通过临时ID找到真实的块ID
+                const realBlockId = tempToRealBlockId.get(tempBlockId);
 
-                if (!imageUrl) {
-                    console.warn(`未找到图片 URL: ${imageBlock.caption}`);
+                if (!realBlockId) {
+                    console.warn(`未找到真实块ID: ${tempBlockId}`);
+                    uploadResults.push({
+                        temp_block_id: tempBlockId,
+                        url: imageUrl,
+                        success: false,
+                        error: '未找到真实块ID'
+                    });
                     continue;
                 }
 
                 // 上传图片
-                const fileToken = await uploadImage(userAccessToken, imageBlock.block_id, imageUrl);
+                const fileToken = await uploadImage(userAccessToken, realBlockId, imageUrl);
 
                 if (!fileToken) {
                     console.warn(`图片上传失败: ${imageUrl}`);
                     uploadResults.push({
-                        block_id: imageBlock.block_id,
+                        temp_block_id: tempBlockId,
+                        real_block_id: realBlockId,
                         url: imageUrl,
-                        success: false
+                        success: false,
+                        error: '图片上传失败'
                     });
                     continue;
                 }
@@ -209,7 +196,7 @@ export const docxMarkdownInsert = {
                     await client.docx.v1.documentBlock.patch({
                         path: {
                             document_id: params.document_id,
-                            block_id: imageBlock.block_id
+                            block_id: realBlockId
                         },
                         data: {
                             replace_image: { token: fileToken }
@@ -217,15 +204,17 @@ export const docxMarkdownInsert = {
                     }, lark.withUserAccessToken(userAccessToken));
 
                     uploadResults.push({
-                        block_id: imageBlock.block_id,
+                        temp_block_id: tempBlockId,
+                        real_block_id: realBlockId,
                         url: imageUrl,
                         file_token: fileToken,
                         success: true
                     });
                 } catch (error) {
-                    console.error(`更新图片块失败 (${imageBlock.block_id}):`, error);
+                    console.error(`更新图片块失败 (${realBlockId}):`, error);
                     uploadResults.push({
-                        block_id: imageBlock.block_id,
+                        temp_block_id: tempBlockId,
+                        real_block_id: realBlockId,
                         url: imageUrl,
                         file_token: fileToken,
                         success: false,
