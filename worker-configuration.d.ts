@@ -5,7 +5,6 @@ declare namespace Cloudflare {
 	interface Env {
 		OAUTH_KV: KVNamespace;
 		MCP_OBJECT: DurableObjectNamespace<import("./src/index").MyMCP>;
-		AI: Ai;
 		FEISHU_APP_ID: string;
 		FEISHU_APP_SECRET: string;
 		COOKIE_ENCRYPTION_KEY: string;
