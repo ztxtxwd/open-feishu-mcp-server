@@ -15,7 +15,7 @@ import {
 } from '../addons/helpers';
 
 const description: McpToolDescription = {
-  shortDescription: '飞书-云文档-文档-块-创建块并插入到指定位置',
+  shortDescription: '飞书-云文档-文档-块-创建块并插入到指定位置，使用之前需要先调用docx_block_schema_get工具，以获取正确的块schema',
   bestFor: '文本、标题、列表、代码、引用、待办事项、高亮、表格、图片、附件、文件、视频、插件块（文本绘图、名词解释、时间轴、目录导航、信息收集、倒计时）等所有块类型的创建',
   notRecommendedFor: '在没有使用docx_image_or_video_or_file_create的情况下直接创建图片、附件、文件、视频块',
   promptExample: '在文档中创建一个文本块，内容为"Hello World"',
