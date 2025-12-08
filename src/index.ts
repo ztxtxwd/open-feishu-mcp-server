@@ -19,6 +19,8 @@ import { suiteSearch } from './tools/suite';
 import { userInfo } from './tools/authen/user_info';
 import { docxMarkdownInsert } from './tools/document';
 
+import { createHeading1Block } from 'feishu-tools';
+
 import { GenTools } from './mcp-tool/tools/zh/gen-tools';
 
 const client = new Client({
@@ -43,6 +45,17 @@ export class MyMCP extends McpAgent<Props, Env> {
     // }))
 
     // Use the upstream access token to facilitate tools
+    const context = {
+      client: client,
+      getTenantAccessToken: async () => {
+        return "test";
+      },
+      getUserAccessToken: async (): Promise<string> => {
+        return this.props.accessToken as string;
+      },
+    }
+    this.server.tool(createHeading1Block.name, createHeading1Block.description||'', createHeading1Block.inputSchema.shape, async (args, extra) =>
+      createHeading1Block.callback(context, args as { document_id: string; block_id: string; index: number; text: string; }, extra as any));
     
     this.server.tool(userInfo.name, userInfo.description, userInfo.inputSchema, async (params) => {
       return await userInfo.customHandler(params, client, this.props.accessToken);
