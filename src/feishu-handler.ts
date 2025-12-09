@@ -20,11 +20,10 @@ app.use('/.well-known/*', cors({
 // OAuth 2.0 Protected Resource Metadata
 app.get('/.well-known/oauth-protected-resource', async (c) => {
 	const baseUrl = new URL(c.req.url).origin;
-	
 	return c.json({
 		// Required fields
 		resource: baseUrl,
-		authorization_servers: [`${baseUrl}/.well-known/oauth-authorization-server`],
+		authorization_servers: [baseUrl],
 		
 		// Optional fields
 		resource_documentation: `${baseUrl}/docs`,
@@ -169,7 +168,7 @@ app.get("/callback", async (c) => {
 		// This will be available on this.props inside MyMCP
 		props: {
 			userId: user_id,
-			name: name || en_name,
+			name: encodeURIComponent(name || en_name),
 			email,
 			accessToken,
 			refreshToken,

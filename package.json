@@ -15,20 +15,20 @@
   },
   "dependencies": {
     "@larksuiteoapi/node-sdk": "^1.55.0",
-    "axios": "^1.11.0",
+    "axios": "^1.13.2",
     "dotenv": "^17.2.0",
-    "feishu-tools": "^0.1.0",
+    "feishu-tools": "^0.1.1",
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
     "@cloudflare/workers-oauth-provider": "^0.0.5",
     "@eslint/js": "^9.31.0",
-    "@modelcontextprotocol/sdk": "^1.16.0",
+    "@modelcontextprotocol/sdk": "^1.24.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
-    "agents": "^0.0.109",
+    "agents": "^0.2.30",
     "eslint": "^9.31.0",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^10.1.8",
@@ -45,6 +45,6 @@
     "typescript": "^5.8.3",
     "workers-mcp": "0.1.0-3",
     "wrangler": "^4.25.1",
-    "zod": "3.25.76"
+    "zod": "^4.1.13"
   }
 }

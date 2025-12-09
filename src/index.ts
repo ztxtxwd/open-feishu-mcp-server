@@ -22,6 +22,8 @@ import { docxMarkdownInsert } from './tools/document';
 import { createHeading1Block } from 'feishu-tools';
 
 import { GenTools } from './mcp-tool/tools/zh/gen-tools';
+import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
+import { ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -47,177 +49,17 @@ export class MyMCP extends McpAgent<Props, Env> {
     // Use the upstream access token to facilitate tools
     const context = {
       client: client,
-      getTenantAccessToken: async () => {
-        return "test";
+      getTenantAccessToken: async (): Promise<string> => {
+        return "";
       },
       getUserAccessToken: async (): Promise<string> => {
         return this.props.accessToken as string;
       },
     }
-    this.server.tool(createHeading1Block.name, createHeading1Block.description||'', createHeading1Block.inputSchema.shape, async (args, extra) =>
-      createHeading1Block.callback(context, args as { document_id: string; block_id: string; index: number; text: string; }, extra as any));
+    this.server.registerTool(createHeading1Block.name, {description:createHeading1Block.description||'', inputSchema:createHeading1Block.inputSchema}, async (args, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) =>
+      createHeading1Block.callback(context, args, extra));   
     
-    this.server.tool(userInfo.name, userInfo.description, userInfo.inputSchema, async (params) => {
-      return await userInfo.customHandler(params, client, this.props.accessToken);
-    });
-
-    // for (const tool of BuiltinTools) {
-    //   if (tool) {
-    //     this.server.tool(caseTransf(tool.name, 'camel'), tool.description, tool.schema, (params: any) => {
-    //       try {
-    //         const handler = tool.customHandler || larkOapiHandler
-    //         return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
-    //       } catch (error) {
-    //         return {
-    //           isError: true,
-    //           content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
-    //         }
-    //       }
-    //     })
-    //   }
-    // }
-    // const tool = GenTools.find((tool) => tool.name === 'drive.v1.fileComment.list')
-    // for (const tool of [...GenTools]) {
-    //   if (tool && (tool.name.startsWith('drive.v12.') || tool.name.startsWith('docx.v1.document'))) {
-    //     this.server.tool(tool.name, tool.description, tool.schema, (params: any) => {
-    //       try {
-    //         const handler = tool.customHandler || larkOapiHandler
-    //         return handler(client, { ...params, useUAT: true }, { userAccessToken: this.props.accessToken, tool })
-    //       } catch (error) {
-    //         return {
-    //           isError: true,
-    //           content: [{ type: 'text' as const, text: `Error: ${JSON.stringify((error as Error)?.message)}` }],
-    //         }
-    //       }
-    //     })
-    //   }
-    // }
-    this.server.tool(RecallTool.name, RecallTool.description, RecallTool.schema, (params) =>
-      RecallTool.handler(params, { userAccessToken: this.props.accessToken, domain: 'https://open.feishu.cn' }),
-    );
-
-    // 新增：创建文本绘图文档小组件块工具
-    // this.server.tool(docxAddonsMermaidCreate.name, docxAddonsMermaidCreate.description, docxAddonsMermaidCreate.schema, async (params) => {
-    //   try {
-    //     return await docxAddonsMermaidCreate.customHandler(client, params, {
-    //       userAccessToken: this.props.accessToken,
-    //       tool: docxAddonsMermaidCreate,
-    //     })
-    //   } catch (error) {
-    //     console.error('文本绘图工具执行失败:', error)
-    //     return {
-    //       isError: true,
-    //       content: [{ type: 'text', text: `创建文本绘图块失败: ${error instanceof Error ? error.message : '未知错误'}` }],
-    //     }
-    //   }
-    // })
-
-    this.server.tool(blockTreeTool.name, blockTreeTool.description, blockTreeTool.inputSchema, async (params) => {
-      return await this.handler(params, blockTreeTool.customHandler);
-    });
-    this.server.tool(
-      docxV1BlockTypeSchemaGet.name,
-      docxV1BlockTypeSchemaGet.description,
-      docxV1BlockTypeSchemaGet.schema,
-      async (params) => {
-        return await docxV1BlockTypeSchemaGet.customHandler(params);
-      },
-    );
-    this.server.tool(
-      docxV1DocumentBlockChildrenCreateSimple.name,
-      docxV1DocumentBlockChildrenCreateSimple.description,
-      docxV1DocumentBlockChildrenCreateSimple.schema,
-      async (params) => {
-        return await docxV1DocumentBlockChildrenCreateSimple.customHandler(client, params, {
-          userAccessToken: this.props.accessToken,
-          tool: docxV1DocumentBlockChildrenCreateSimple,
-        });
-      },
-    );
-
-    this.server.tool(mediaUploadTool.name, mediaUploadTool.description, mediaUploadTool.schema, async (params) => {
-      return await mediaUploadTool.customHandler(params, { userAccessToken: this.props.accessToken });
-    });
-
-    this.server.tool(docxBlockPatch.name, docxBlockPatch.description, docxBlockPatch.inputSchema, async (params) => {
-      return await this.handler(params, docxBlockPatch.customHandler);
-    });
-
-    this.server.tool(docxInsertImage.name, docxInsertImage.description, docxInsertImage.schema, async (params) => {
-      return await docxInsertImage.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxInsertImage });
-    });
-
-    this.server.tool(docxInsertFile.name, docxInsertFile.description, docxInsertFile.schema, async (params) => {
-      return await docxInsertFile.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxInsertFile });
-    });
-
-    this.server.tool(docxMarkdownImport.name, docxMarkdownImport.description, docxMarkdownImport.schema, async (params) => {
-      return await docxMarkdownImport.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownImport });
-    });
-
-    this.server.tool(docxBlockBatchDelete.name, docxBlockBatchDelete.description, docxBlockBatchDelete.schema, async (params) => {
-      return await docxBlockBatchDelete.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxBlockBatchDelete });
-    });
-
-    this.server.tool(driveCommentList.name, driveCommentList.description, driveCommentList.inputSchema, async (params) => {
-      return await driveCommentList.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(driveCommentBatch.name, driveCommentBatch.description, driveCommentBatch.inputSchema, async (params) => {
-      return await driveCommentBatch.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(driveCommentPatch.name, driveCommentPatch.description, driveCommentPatch.inputSchema, async (params) => {
-      return await driveCommentPatch.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(driveCommentCreate.name, driveCommentCreate.description, driveCommentCreate.inputSchema, async (params) => {
-      return await driveCommentCreate.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(driveCommentGet.name, driveCommentGet.description, driveCommentGet.inputSchema, async (params) => {
-      return await driveCommentGet.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(driveReplyList.name, driveReplyList.description, driveReplyList.inputSchema, async (params) => {
-      return await driveReplyList.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(driveReplyUpdate.name, driveReplyUpdate.description, driveReplyUpdate.inputSchema, async (params) => {
-      return await driveReplyUpdate.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(driveReplyDelete.name, driveReplyDelete.description, driveReplyDelete.inputSchema, async (params) => {
-      return await driveReplyDelete.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(wikiNodeInfoGet.name, wikiNodeInfoGet.description, wikiNodeInfoGet.inputSchema, async (params) => {
-      return await wikiNodeInfoGet.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(sheetRangeRead.name, sheetRangeRead.description, sheetRangeRead.inputSchema, async (params) => {
-      return await sheetRangeRead.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(sheetInfoGet.name, sheetInfoGet.description, sheetInfoGet.inputSchema, async (params) => {
-      return await sheetInfoGet.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(suiteSearch.name, suiteSearch.description, suiteSearch.inputSchema, async (params) => {
-      return await suiteSearch.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(sheetPatch.name, sheetPatch.description, sheetPatch.inputSchema, async (params) => {
-      return await sheetPatch.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(sheetRangeWrite.name, sheetRangeWrite.description, sheetRangeWrite.inputSchema, async (params) => {
-      return await sheetRangeWrite.customHandler(params, client, this.props.accessToken);
-    });
-
-    this.server.tool(docxMarkdownInsert.name, docxMarkdownInsert.description, docxMarkdownInsert.schema, async (params) => {
-      return await docxMarkdownInsert.customHandler(client, params, { userAccessToken: this.props.accessToken, tool: docxMarkdownInsert });
-    });
+    
   }
 }
 
