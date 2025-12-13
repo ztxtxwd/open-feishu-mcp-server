@@ -17,7 +17,7 @@
     "@larksuiteoapi/node-sdk": "^1.55.0",
     "axios": "^1.13.2",
     "dotenv": "^17.2.0",
-    "feishu-tools": "^0.1.1",
+    "feishu-tools": "^0.1.5",
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {

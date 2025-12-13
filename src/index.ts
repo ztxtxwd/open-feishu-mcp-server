@@ -28,8 +28,8 @@ import { ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/typ
 const client = new Client({
   appId: env.FEISHU_APP_ID,
   appSecret: env.FEISHU_APP_SECRET,
+  httpInstance: oapiHttpInstance,
 });
-client.httpInstance = oapiHttpInstance;
 export class MyMCP extends McpAgent<Props, Env> {
   server = new McpServer({
     name: 'Feishu OAuth Proxy Demo',
@@ -41,20 +41,10 @@ export class MyMCP extends McpAgent<Props, Env> {
   }
 
   async init() {
-    // Hello, world!
-    // this.server.tool('add', 'Add two numbers the way only MCP can', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
-    //   content: [{ type: 'text', text: String(a + b) }],
-    // }))
-
     // Use the upstream access token to facilitate tools
     const context = {
       client: client,
-      getTenantAccessToken: async (): Promise<string> => {
-        return "";
-      },
-      getUserAccessToken: async (): Promise<string> => {
-        return this.props.accessToken as string;
-      },
+      getUserAccessToken: () => this.props.accessToken,
     }
     this.server.registerTool(createHeading1Block.name, {description:createHeading1Block.description||'', inputSchema:createHeading1Block.inputSchema}, async (args, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) =>
       createHeading1Block.callback(context, args, extra));   
