@@ -19,7 +19,7 @@ import { suiteSearch } from './tools/suite';
 import { userInfo } from './tools/authen/user_info';
 import { docxMarkdownInsert } from './tools/document';
 
-import { createHeading1Block } from 'feishu-tools';
+import { createHeading1Block, registerTools } from 'feishu-tools';
 
 import { GenTools } from './mcp-tool/tools/zh/gen-tools';
 import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
@@ -49,6 +49,8 @@ export class MyMCP extends McpAgent<Props, Env> {
     this.server.registerTool(createHeading1Block.name, {description:createHeading1Block.description||'', inputSchema:createHeading1Block.inputSchema}, async (args, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) =>
       createHeading1Block.callback(context, args, extra));   
     
+    this.server.registerTool(userInfo.name,{description:userInfo.description,inputSchema:userInfo.inputSchema,outputSchema:userInfo.outputSchema}, async (args, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) =>
+      userInfo.customHandler(args,client,this.props.accessToken));   
     
   }
 }

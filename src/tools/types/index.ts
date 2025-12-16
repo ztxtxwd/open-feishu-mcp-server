@@ -29,9 +29,6 @@ export type McpHandler = (
  *   shortDescription: "飞书-云文档-文档-获取文档所有块",
  *   bestFor: "需要获取文档内容或指定块位置时",
  *   notRecommendedFor: "在文档开头或末尾操作时",
- *   promptExample: "获取文档ID为xxx的所有块结构",
- *   usageExample: "docx_block_tree_get({document_id: 'xxx'})",
- *   returns: "文档完整块树结构，包含索引标记和层级信息"
  * };
  */
 export type McpToolDescription = {
@@ -41,12 +38,6 @@ export type McpToolDescription = {
   bestFor?: string;
   /** 不推荐使用该工具的场景 */
   notRecommendedFor?: string;
-  /** 提示词使用示例 */
-  promptExample?: string;
-  /** 工具调用示例 */
-  usageExample?: string;
-  /** 工具返回值说明 */
-  returns?: string;
 } | string;
 /**
  * MCP工具类型定义
@@ -74,18 +65,6 @@ export function convertDescriptionToString(description: McpToolDescription): str
   
   if (typeof description === 'object' && 'notRecommendedFor' in description) {
     parts.push(`**不推荐用于:** ${description.notRecommendedFor || ''}`);
-  }
-  
-  if (typeof description === 'object' && 'promptExample' in description) {
-    parts.push(`**示例:** ${description.promptExample || ''}`);
-  }
-  
-  if (typeof description === 'object' && 'usageExample' in description) {
-    parts.push(`**调用示例:** ${description.usageExample || ''}`);
-  }
-  
-  if (typeof description === 'object' && 'returns' in description) {
-    parts.push(`**返回:** ${description.returns || ''}`);
   }
   
   return parts.join('\n\n');
