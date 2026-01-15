@@ -16,14 +16,69 @@ import { driveReplyList, driveReplyUpdate, driveReplyDelete } from './tools/driv
 import { wikiNodeInfoGet } from './tools/wiki/space';
 import { sheetRangeRead, sheetInfoGet,sheetPatch, sheetRangeWrite } from './tools/sheet';
 import { suiteSearch } from './tools/suite';
-import { userInfo } from './tools/authen/user_info';
 import { docxMarkdownInsert } from './tools/document';
 
-import { createHeading1Block, registerTools } from 'feishu-tools';
+import {
+  registerTools,
+  // authen
+  getUserInfo,
+  // docx
+  createDocument,
+  getDocument,
+  getDocumentRawContent,
+  convertContentToBlocks,
+  // docx blocks
+  listDocumentBlocks,
+  createBlocks,
+  deleteBlock,
+  batchDeleteBlocks,
+  buildTextBlock,
+  buildHeading1Block,
+  buildHeading2Block,
+  buildHeading3Block,
+  buildHeading4Block,
+  buildHeading5Block,
+  buildHeading6Block,
+  buildHeading7Block,
+  buildHeading8Block,
+  buildHeading9Block,
+  buildBulletBlock,
+  buildOrderedBlock,
+  buildQuoteBlock,
+  buildEquationBlock,
+  buildTodoBlock,
+  buildCodeBlock,
+  buildDividerBlock,
+  buildCalloutBlock,
+  searchFeishuCalloutEmoji,
+  createFileBlock,
+  createImageBlock,
+  buildIframeBlock,
+  buildChatCardBlock,
+  buildGridBlock,
+  buildMermaidBlock,
+  buildGlossaryBlock,
+  buildTimelineBlock,
+  buildCatalogNavigationBlock,
+  buildInformationCollectionBlock,
+  buildCountdownBlock,
+  // drive
+  listFileComments,
+  // sheets
+  addSheet,
+  copySheet,
+  createSpreadsheet,
+  deleteSheet,
+  getSheet,
+  getSpreadsheet,
+  querySheets,
+  updateSheetMetadata,
+  updateSheetProtection,
+  updateSheetViewSettings,
+  updateSpreadsheet,
+} from 'feishu-tools';
 
 import { GenTools } from './mcp-tool/tools/zh/gen-tools';
-import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import { ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js';
 
 const client = new Client({
   appId: env.FEISHU_APP_ID,
@@ -44,14 +99,70 @@ export class MyMCP extends McpAgent<Props, Env> {
     // Use the upstream access token to facilitate tools
     const context = {
       client: client,
-      getUserAccessToken: () => this.props.accessToken,
+      getUserAccessToken: () => this.props.accessToken as string,
     }
-    this.server.registerTool(createHeading1Block.name, {description:createHeading1Block.description||'', inputSchema:createHeading1Block.inputSchema}, async (args, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) =>
-      createHeading1Block.callback(context, args, extra));   
-    
-    this.server.registerTool(userInfo.name,{description:userInfo.description,inputSchema:userInfo.inputSchema,outputSchema:userInfo.outputSchema}, async (args, extra: RequestHandlerExtra<ServerRequest, ServerNotification>) =>
-      userInfo.customHandler(args,client,this.props.accessToken));   
-    
+
+    // 批量注册所有 feishu-tools 工具
+    const allTools = [
+      // authen
+      getUserInfo,
+      // docx
+      createDocument,
+      getDocument,
+      getDocumentRawContent,
+      convertContentToBlocks,
+      // docx blocks
+      listDocumentBlocks,
+      createBlocks,
+      deleteBlock,
+      batchDeleteBlocks,
+      buildTextBlock,
+      buildHeading1Block,
+      buildHeading2Block,
+      buildHeading3Block,
+      buildHeading4Block,
+      buildHeading5Block,
+      buildHeading6Block,
+      buildHeading7Block,
+      buildHeading8Block,
+      buildHeading9Block,
+      buildBulletBlock,
+      buildOrderedBlock,
+      buildQuoteBlock,
+      buildEquationBlock,
+      buildTodoBlock,
+      buildCodeBlock,
+      buildDividerBlock,
+      buildCalloutBlock,
+      searchFeishuCalloutEmoji,
+      createFileBlock,
+      createImageBlock,
+      buildIframeBlock,
+      buildChatCardBlock,
+      buildGridBlock,
+      buildMermaidBlock,
+      buildGlossaryBlock,
+      buildTimelineBlock,
+      buildCatalogNavigationBlock,
+      buildInformationCollectionBlock,
+      buildCountdownBlock,
+      // drive
+      listFileComments,
+      // sheets
+      addSheet,
+      copySheet,
+      createSpreadsheet,
+      deleteSheet,
+      getSheet,
+      getSpreadsheet,
+      querySheets,
+      updateSheetMetadata,
+      updateSheetProtection,
+      updateSheetViewSettings,
+      updateSpreadsheet,
+    ];
+
+    registerTools(this.server, allTools, context);
   }
 }
 
