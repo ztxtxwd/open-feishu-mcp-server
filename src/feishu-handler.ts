@@ -5,7 +5,6 @@ import { env } from 'cloudflare:workers';
 
 import { fetchUpstreamAuthToken, getUpstreamAuthorizeUrl, Props } from './utils';
 import { clientIdAlreadyApproved, parseRedirectApproval, renderApprovalDialog } from './workers-oauth-utils';
-import { HttpStatusCode } from 'axios';
 
 const app = new Hono<{ Bindings: Env & { OAUTH_PROVIDER: OAuthHelpers } }>();
 
