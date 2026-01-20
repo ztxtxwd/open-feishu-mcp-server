@@ -22,8 +22,8 @@ importers:
         version: 3.25.1(zod@4.3.5)
     devDependencies:
       '@cloudflare/workers-oauth-provider':
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^0.0.5
+        version: 0.0.5
       '@eslint/js':
         specifier: ^9.31.0
         version: 9.31.0
@@ -363,8 +363,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-oauth-provider@0.2.2':
-    resolution: {integrity: sha512-hvg9NFLZwpb/+dNilv8cFrUPjWO1Kqi5UwZymOub92djS3YwdHQczgreVG+GU2C0YHOypNkr/P3Jo6pfkXXQFQ==}
+  '@cloudflare/workers-oauth-provider@0.0.5':
+    resolution: {integrity: sha512-t1x5KAzsubCvb4APnJ93z407X1x7SGj/ga5ziRnwIb/iLy4PMkT/hgd1y5z7Bbsdy5Fy6mywhCP4lym24bX66w==}
 
   '@cloudflare/workers-types@4.20250719.0':
     resolution: {integrity: sha512-tSc2FM2QPWA8ZmDniQXz+4qVKuf8zrwVwqlkXxxGBsQHxTpcukuMibYcYWxwonzbzK7YzSug+iena2F8gGOuOw==}
@@ -4289,7 +4289,9 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20260114.0':
     optional: true
 
-  '@cloudflare/workers-oauth-provider@0.2.2': {}
+  '@cloudflare/workers-oauth-provider@0.0.5':
+    dependencies:
+      '@cloudflare/workers-types': 4.20250719.0
 
   '@cloudflare/workers-types@4.20250719.0': {}
 

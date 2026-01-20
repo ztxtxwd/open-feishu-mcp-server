@@ -20,7 +20,7 @@
     "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
-    "@cloudflare/workers-oauth-provider": "^0.2.2",
+    "@cloudflare/workers-oauth-provider": "^0.0.5",
     "@eslint/js": "^9.31.0",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "@types/jest": "^30.0.0",
