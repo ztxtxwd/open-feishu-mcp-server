@@ -97,7 +97,7 @@ wrangler secret put FEISHU_APP_SECRET
 wrangler secret put COOKIE_ENCRYPTION_KEY  # 使用 openssl rand -hex 32 生成
 
 # 创建 KV 命名空间
-wrangler kv:namespace create "OAUTH_KV"
+wrangler kv namespace create "OAUTH_KV"
 ```
 
 #### 步骤 3: 更新配置文件
