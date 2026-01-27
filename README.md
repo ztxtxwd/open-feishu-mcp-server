@@ -1,4 +1,6 @@
 [![MCP Badge](https://lobehub.com/badge/mcp/ztxtxwd-open-feishu-mcp-server)](https://lobehub.com/mcp/ztxtxwd-open-feishu-mcp-server)
+
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ztxtxwd/open-feishu-mcp-server)](https://archestra.ai/mcp-catalog/ztxtxwd__open-feishu-mcp-server)
 # 飞书 MCP Server
 
 [English Documentation](README.en.md)
