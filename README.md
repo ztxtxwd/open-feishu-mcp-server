@@ -282,3 +282,8 @@ npx @modelcontextprotocol/inspector@latest
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=ztxtxwd/open-feishu-mcp-server&type=Date)](https://star-history.com/#ztxtxwd/open-feishu-mcp-server&Date)
+
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/ztxtxwd-open-feishu-mcp-server).
+
